@@ -1,4 +1,9 @@
 from limit import LimitExpression
+import sys
+
+class TraceError(Exception):
+    """ Raised on any user-facing error in this module. """
+    pass
 
 class Wire:
 
@@ -8,11 +13,17 @@ class Wire:
         self.data = data
     
     @staticmethod
-    def str_to_int(data):
+    def _to_int(data):
         if data[0] == 'b':
-            return int(data[1:], 2)
+            try:
+                return int(data[1:], 2)
+            except ValueError:
+                return None
         else:
-            return int(data)
+            try:
+                return int(data)
+            except ValueError:
+                return None
 
     @staticmethod
     def parse_vcd(vcd_data):
@@ -23,7 +34,7 @@ class Wire:
         end = source_data[-1][0] if len(source_data) else 0
         while time <= end:
             if time in source_dict:
-                wiredata.append(Wire.str_to_int(source_dict[time]))
+                wiredata.append(Wire._to_int(source_dict[time]))
             elif time > 0:
                 wiredata.append(wiredata[-1])
             else:
@@ -35,24 +46,22 @@ class Wire:
             width=vcd_data["type"]["width"],
             data=wiredata
         )
-    
-    def __add__(self, other):
+
+    def __invert__(self):
         data = []
-        length = max(len(self.data), len(other.data))
-        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
-                      other.data + [other.data[-1]] * (length - len(other.data))):
-            data.append(a + b)
+        for a in self.data:
+            data.append(None if a == None else ~a)
         
         return Wire(
-            name="(" + self.name + " + " + other.name + ")",
-            width=max(self.width, other.width),
+            name="~" + self.name,
+            width=self.width,
             data=data
         )
-    
+
     def __neg__(self):
         data = []
         for a in self.data:
-            data.append(-a)
+            data.append(None if a == None else -a)
         
         return Wire(
             name="-" + self.name,
@@ -65,10 +74,36 @@ class Wire:
         length = max(len(self.data), len(other.data))
         for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
                       other.data + [other.data[-1]] * (length - len(other.data))):
-            data.append(a & b)
+            data.append(None if a == None or b == None else a & b)
         
         return Wire(
             name="(" + self.name + " & " + other.name + ")",
+            width=max(self.width, other.width),
+            data=data
+        )
+
+    def __or__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else a | b)
+        
+        return Wire(
+            name="(" + self.name + " | " + other.name + ")",
+            width=max(self.width, other.width),
+            data=data
+        )
+
+    def __xor__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else a ^ b)
+        
+        return Wire(
+            name="(" + self.name + " ^ " + other.name + ")",
             width=max(self.width, other.width),
             data=data
         )
@@ -82,10 +117,227 @@ class Wire:
         
         return Wire(
             name="(" + self.name + " == " + other.name + ")",
-            width=max(self.width, other.width),
+            width=1,
             data=data
         )
 
+    def __ne__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a != b))
+        
+        return Wire(
+            name="(" + self.name + " != " + other.name + ")",
+            width=1,
+            data=data
+        )
+
+    def __gt__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a > b))
+        
+        return Wire(
+            name="(" + self.name + " > " + other.name + ")",
+            width=1,
+            data=data
+        )
+
+    def __ge__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a >= b))
+        
+        return Wire(
+            name="(" + self.name + " >= " + other.name + ")",
+            width=1,
+            data=data
+        )
+
+    def __lt__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a < b))
+        
+        return Wire(
+            name="(" + self.name + " < " + other.name + ")",
+            width=1,
+            data=data
+        )
+
+    def __le__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a <= b))
+        
+        return Wire(
+            name="(" + self.name + " <= " + other.name + ")",
+            width=1,
+            data=data
+        )
+
+    def __lshift__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a << b))
+        
+        return Wire(
+            name="(" + self.name + " << " + other.name + ")",
+            width=self.width,
+            data=data
+        )
+
+    def __rshift__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else int(a >> b))
+        
+        return Wire(
+            name="(" + self.name + " >> " + other.name + ")",
+            width=self.width,
+            data=data
+        )
+
+    def __add__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else a + b)
+        
+        return Wire(
+            name="(" + self.name + " + " + other.name + ")",
+            width=max(self.width, other.width),
+            data=data
+        )
+    
+    def __sub__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else a - b)
+        
+        return Wire(
+            name="(" + self.name + " - " + other.name + ")",
+            width=max(self.width, other.width),
+            data=data
+        )
+    
+    def __mod__(self, other):
+        data = []
+        length = max(len(self.data), len(other.data))
+        for (a, b) in zip(self.data + [self.data[-1]] * (length - len(self.data)), 
+                      other.data + [other.data[-1]] * (length - len(other.data))):
+            data.append(None if a == None or b == None else a % b)
+        
+        return Wire(
+            name="(" + self.name + " % " + other.name + ")",
+            width=self.width,
+            data=data
+        )
+    
+    def _from(self):
+        data = []
+        triggered = False
+        for a in self.data:
+            if a:
+                triggered = True
+            data.append(int(triggered))
+        
+        return Wire(
+            name="from " + self.name,
+            width=1,
+            data=data
+        )
+
+    def _after(self):
+        data = []
+        triggered = False
+        for a in self.data:
+            data.append(int(triggered))
+            if a:
+                triggered = True
+        
+        return Wire(
+            name="after " + self.name,
+            width=1,
+            data=data
+        )
+
+    def _until(self):
+        data = []
+        triggered = True
+        for a in self.data:
+            data.append(int(not triggered))
+            if a:
+                triggered = False
+        
+        return Wire(
+            name="until " + self.name,
+            width=1,
+            data=data
+        )
+
+    def _before(self):
+        data = []
+        triggered = True
+        for a in self.data:
+            if a:
+                triggered = False
+            data.append(int(not triggered))
+            
+        return Wire(
+            name="before " + self.name,
+            width=1,
+            data=data
+        )
+
+    def _next(self, amt=1):
+        return Wire(
+            name="next " + self.name,
+            width=self.width,
+            data=self.data[amt:]
+        )
+
+    def _prev(self, amt=1):
+        return Wire(
+            name="prev " + self.name,
+            width=self.width,
+            data=[None] * amt + self.data
+        )
+
+    def _acc(self):
+        data = []
+        counter = 0
+        state = True
+        for a in self.data:
+            if a and not state:
+                state = True
+                counter += 1
+            elif not a and state:
+                state = False
+            data.append(counter)
+        
+        return Wire(
+            name="acc " + self.name,
+            width=0,
+            data=data
+        )
 
 class WireGroup:
 
@@ -132,6 +384,7 @@ class WireTrace:
             )
         return wiretrace
 
+    # Returns the time of the last entry in data
     def length(self):
         limit = 0
         for wiregroup in self.wiregroups:
@@ -139,24 +392,77 @@ class WireTrace:
                 limit = max(limit, len(wire.data))
         return limit
 
+    # Gets a wire object based on the name
     def find_wire(self, name):
         for wiregroup in self.wiregroups:
             for wire in wiregroup.wires:
                 if wire.name == name:
                     return wire
+        raise TraceError(f"Wire '{name}' does not exist.")
     
     def compute_wire(self, expr):
         if expr.data == "wire":
             return self.find_wire(expr.children[0])
+        elif expr.data.type == "NOT":
+            return ~self.compute_wire(expr.children[0])
+        elif expr.data.type == "NEG":
+            return -self.compute_wire(expr.children[0])
         elif expr.data.type == "AND":
             return self.compute_wire(expr.children[0]) & self.compute_wire(expr.children[1])
-        elif expr.data.type == "ADD":
-            return self.compute_wire(expr.children[0]) + self.compute_wire(expr.children[1])
+        elif expr.data.type == "OR":
+            return self.compute_wire(expr.children[0]) | self.compute_wire(expr.children[1])
+        elif expr.data.type == "XOR":
+            return self.compute_wire(expr.children[0]) ^ self.compute_wire(expr.children[1])
         elif expr.data.type == "EQ":
             return self.compute_wire(expr.children[0]) == self.compute_wire(expr.children[1])
+        elif expr.data.type == "NEQ":
+            return self.compute_wire(expr.children[0]) != self.compute_wire(expr.children[1])
+        elif expr.data.type == "GT":
+            return self.compute_wire(expr.children[0]) > self.compute_wire(expr.children[1])
+        elif expr.data.type == "GEQ":
+            return self.compute_wire(expr.children[0]) >= self.compute_wire(expr.children[1])
+        elif expr.data.type == "LT":
+            return self.compute_wire(expr.children[0]) < self.compute_wire(expr.children[1])
+        elif expr.data.type == "LEQ":
+            return self.compute_wire(expr.children[0]) <= self.compute_wire(expr.children[1])
+        elif expr.data.type == "SL":
+            return self.compute_wire(expr.children[0]) << self.compute_wire(expr.children[1])
+        elif expr.data.type == "SR":
+            return self.compute_wire(expr.children[0]) >> self.compute_wire(expr.children[1])
+        elif expr.data.type == "ADD":
+            return self.compute_wire(expr.children[0]) + self.compute_wire(expr.children[1])
+        elif expr.data.type == "SUB":
+            return self.compute_wire(expr.children[0]) - self.compute_wire(expr.children[1])
+        elif expr.data.type == "MOD":
+            return self.compute_wire(expr.children[0]) % self.compute_wire(expr.children[1])
+        elif expr.data.type == "FROM":
+            return self.compute_wire(expr.children[0])._from()
+        elif expr.data.type == "AFTER":
+            return self.compute_wire(expr.children[0])._after()
+        elif expr.data.type == "UNTIL":
+            return self.compute_wire(expr.children[0])._until()
+        elif expr.data.type == "BEFORE":
+            return self.compute_wire(expr.children[0])._before()
+        elif expr.data.type == "NEXT":
+            return self.compute_wire(expr.children[0])._next()
+        elif expr.data.type == "PREV":
+            return self.compute_wire(expr.children[0])._prev()
+        elif expr.data.type == "ACC":
+            return self.compute_wire(expr.children[0])._acc()
         elif expr.data.type == "CONST":
             return Wire(name=expr.data, width=0, data=[int(expr.children[0])])
+        elif expr.data.type == "TIME":
+            return Wire(name=f"t_{expr.data}", width=1, data=[0] * int(expr.children[0]) + [1, 0])
 
     def compute_limits(self, start_expr: LimitExpression, end_expr: LimitExpression):
-        return (self.compute_wire(start_expr.tree).data.index(1), 
-            self.compute_wire(end_expr.tree).data.index(1))
+        try:
+            start = self.compute_wire(start_expr.tree).data.index(1)
+        except ValueError:
+            start = 0
+        try:
+            end = self.compute_wire(end_expr.tree).data[start:].index(1) + start
+        except ValueError:
+            end = self.length()
+        print(start, end, file=sys.stderr)
+        return (start, end)
+

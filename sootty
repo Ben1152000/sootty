@@ -1,10 +1,5 @@
 #! /bin/bash
-
-if [ "$#" -eq 0 ]; then
-    echo "Usage: sootty sample.vcd"
-else
-    temp_file=$(mktemp)
-    python3 run.py "$1" | rsvg-convert -x 4 -y 4 > $temp_file
-    viu $temp_file
-    rm $temp_file
-fi
+temp_file=$(mktemp)
+python3 main.py "$@" | rsvg-convert -x 4 -y 4 > $temp_file
+viu $temp_file
+rm $temp_file

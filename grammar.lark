@@ -8,8 +8,6 @@ start : lexp
 AND : "&"
 OR : "|"
 XOR : "^"
-IMP : "->"
-EQV : "="
 EQ : "=="
 NEQ : "!="
 GT : ">"
@@ -33,7 +31,7 @@ NEXT : "next"
 PREV : "prev"
 ACC : "acc"
 
-lop : AND | OR | XOR | IMP | EQV
+lop : AND | OR | XOR
 lexp : rexp | lexp lop rexp
 
 rop : EQ | NEQ | GT | GEQ | LT | LEQ
