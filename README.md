@@ -2,6 +2,6 @@
 # Dependencies:
 
 - lark
-- viu (use provided git repo)
-- pyDigitalWaveTools (must be installed from git repo, cd into the directory and use the command `python3 -m pip install -e .` to install)
+- viu (`git clone https://github.com/atanunq/viu.git viu/ && cd viu/ && cargo install --path .`)
+- pyDigitalWaveTools (`git clone https://github.com/Nic30/pyDigitalWaveTools.git pyDigitalWaveTools/ && cd pyDigitalWaveTools/ && python3 -m pip install .`)
 - rsvg-convert (`brew install librsvg`)

@@ -1,6 +1,7 @@
-from pyDigitalWaveTools.vcd.parser import VcdParser
-from wiretrace import WireTrace
 import json
+from pyDigitalWaveTools.vcd.parser import VcdParser
+
+from .wiretrace import WireTrace
 
 DEBUG = False
 

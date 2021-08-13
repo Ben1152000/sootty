@@ -1,5 +1,4 @@
-from limit import LimitExpression
-import sys
+from .limits import LimitExpression
 
 class TraceError(Exception):
     """ Raised on any user-facing error in this module. """
@@ -463,6 +462,5 @@ class WireTrace:
             end = self.compute_wire(end_expr.tree).data[start:].index(1) + start
         except ValueError:
             end = self.length()
-        print(start, end, file=sys.stderr)
         return (start, end)
 

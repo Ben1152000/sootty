@@ -1,5 +1,0 @@
-#! /bin/bash
-temp_file=$(mktemp)
-python3 main.py "$@" | rsvg-convert -x 4 -y 4 > $temp_file
-viu $temp_file
-rm $temp_file

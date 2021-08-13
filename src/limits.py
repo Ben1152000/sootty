@@ -1,6 +1,11 @@
 from lark import Lark, Tree, Token, Visitor
 
-parser = Lark.open("grammar.lark")
+import importlib.resources as pkg_resources
+
+# parser = Lark.open("grammar.lark")
+from . import static
+template = pkg_resources.open_text(static, "grammar.lark")
+
 
 class Prune(Visitor):
 
