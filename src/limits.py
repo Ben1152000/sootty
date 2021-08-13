@@ -5,9 +5,8 @@ try:
 except ImportError:
     import importlib_resources as pkg_resources
 
-# parser = Lark.open("grammar.lark")
 from . import static
-template = pkg_resources.open_text(static, "grammar.lark")
+parser = Lark(pkg_resources.open_text(static, "grammar.lark").read())
 
 
 class Prune(Visitor):
