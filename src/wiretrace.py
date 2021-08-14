@@ -346,9 +346,10 @@ class WireGroup:
 
     def add_wire(self, wire):
         self.wires.append(wire)
-    
+
     def add_wires(self, wiregroup):
-        self.wires += wiregroup.wires
+        for wire in wiregroup.wires:
+            self.add_wire(wire)
 
     @staticmethod
     def parse_vcd(vcd_data):
