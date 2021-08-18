@@ -15,6 +15,7 @@ def main():
     parser.add_argument('-e', '--end', type=str, metavar='FORMULA', dest='end', help='formula for the end of the window')
     parser.add_argument('-l', '--length', type=int, dest='length', help='number of cycles to display')
     parser.add_argument('-d', '--display', action='store_true', help='display to command line')
+    parser.add_argument('-w', '--wires', type=str, metavar='LIST', dest='wires', help='comma-separated list of wires to view')
     args = parser.parse_args()
 
     wiretrace = parse_vcd(args.filename)
@@ -35,8 +36,15 @@ def main():
             start = 0
         length = args.length if args.length is not None else wiretrace.length() - start
     
+    wires = set()
+    if args.wires:
+        wires = set(args.wires.split(','))
+    
     svg_data = Visualizer.wiretrace_to_svg(
-        wiretrace=wiretrace, start=start, length=length)
+        wiretrace=wiretrace, start=start, length=length, wires=wires)
+
+    if len(wires):
+        raise Exception(f'Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}')
     
     if args.display:
         with NamedTemporaryFile() as temp:
