@@ -36,15 +36,6 @@ How to run in python:
     # Display to stdout:
     wiretrace.display(start=0, length=8)
 
-assert type(wiretrace) == WireTrace
-
-svg_data = wiretrace.to_svg(start=0, length=8)
-
-pattern = r'(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b'
-prog = re.compile(pattern, re.DOTALL)
-assert prog.match(svg_data) is not None
-
-wiretrace.display(start=0, length=8)
 # Dependencies:
 
 - viu (`git clone https://github.com/atanunq/viu.git viu/ && cd viu/ && cargo install --path .`)
