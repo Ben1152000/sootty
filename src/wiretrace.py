@@ -25,7 +25,7 @@ class Wire:
                 return None
 
     @staticmethod
-    def parse_vcd(vcd_data):
+    def parse_vcd(vcd_data, base_name=""):
         wiredata = []
         source_data = sorted(vcd_data["data"])
         source_dict = dict(source_data)
@@ -41,7 +41,7 @@ class Wire:
             time += 1
         
         return Wire(
-            name=vcd_data["name"],
+            name=base_name + ('.' if len(base_name) else "") + vcd_data["name"],
             width=vcd_data["type"]["width"],
             data=wiredata
         )
@@ -352,18 +352,19 @@ class WireGroup:
             self.add_wire(wire)
 
     @staticmethod
-    def parse_vcd(vcd_data):
+    def parse_vcd(vcd_data, base_name=None):
+        name = "" if base_name == None else (base_name + ('.' if len(base_name) else "") + vcd_data["name"])
         wiregroup = WireGroup(
-            name=vcd_data["name"]
+            name=vcd_data["name"] if len(name) == 0 else name
         )
         for child in vcd_data["children"]:
             if "data" in child:
                 wiregroup.add_wire(
-                    Wire.parse_vcd(child)
+                    Wire.parse_vcd(child, name)
                 )
             else:
                 wiregroup.add_wires(
-                    WireGroup.parse_vcd(child)
+                    WireGroup.parse_vcd(child, name)
                 )
         return wiregroup
 
@@ -399,6 +400,13 @@ class WireTrace:
                 if wire.name == name:
                     return wire
         raise TraceError(f"Wire '{name}' does not exist.")
+    
+    def get_wire_names(self):
+        names = []
+        for wiregroup in self.wiregroups:
+            for wire in wiregroup.wires:
+                names.append(wire.name)
+        return names
     
     def compute_wire(self, expr):
         if expr.data == "wire":

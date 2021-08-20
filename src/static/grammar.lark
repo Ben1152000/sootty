@@ -1,9 +1,11 @@
 %import common.WS
 %ignore WS
-%import common.CNAME -> NAME
+%import common.LETTER -> LETTER
+%import common.DIGIT -> DIGIT
 %import common.NUMBER -> NUM
 
 start : lexp
+NAME: ("_"|LETTER) ("_"|LETTER|DIGIT)* ("." ("_"|LETTER|DIGIT)+)*
 
 AND : "&"
 OR : "|"
