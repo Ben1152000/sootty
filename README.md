@@ -4,7 +4,7 @@ The program can be installed by running the `install` bash script (optionally in
 
 Run:
 
-    sootty waveform.vcs > image.svg
+    sootty waveform.vcd > image.svg
 
 with a vcs file to produce an svg waveform diagram. Optional arguments include:
 - `-s | --start FORMULA` Specity the start of the window.
