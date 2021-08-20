@@ -1,10 +1,6 @@
 from .main import main
 
-from .limits import LimitExpression
-
-from .parser import parse_vcd
-
-from .visualizer import Visualizer
+from .display import display
 
 from .wiretrace import Wire
 from .wiretrace import WireGroup

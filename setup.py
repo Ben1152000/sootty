@@ -2,16 +2,16 @@ import setuptools
 
 setuptools.setup( 
     name='sootty', 
-    version='1.0',
+    version='0.1',
     description='Converts vcd files into svg', 
     packages=setuptools.find_packages(), 
     entry_points={ 
         'console_scripts': [ 
-            'sootty = src.main:main'
+            'sootty = sootty.main:main'
         ] 
     },
     package_data={
-        "src.static": ["*.lark"],
+        "sootty.static": ["*.lark"],
     },
     install_requires=[
         'lark',

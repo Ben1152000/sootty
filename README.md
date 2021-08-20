@@ -17,12 +17,34 @@ with a vcs file to produce an svg waveform diagram. Optional arguments include:
 
 Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
 
-    sootty waveform.vcs -d -s "time 4" -e "acc clk == const 10"
+    sootty example/example3.vcd -s "time 4" -e "acc clk == const 10" -w "clk,rst_n,core.pc,core.inst" -d
 
-Display wires `val` and `src` for 20 units of time starting when `val` is equal to 20:
+Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal to 20:
 
-    sootty waveform.vcs -d -l 20 -s "val == const 20" -w "val,src"
+    sootty example/example1.vcd -l 8 -s "Data == const 20" -w "D1,Data" -d
+
+How to run in python:
+
+    from sootty import WireTrace
+
+    # Create wiretrace object from vcd file:
+    wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
+
+    # Convert wiretrace to svg:
+    svg_data = WireTrace.to_svg(start=0, length=8)
     
+    # Display to stdout:
+    wiretrace.display(start=0, length=8)
+
+assert type(wiretrace) == WireTrace
+
+svg_data = wiretrace.to_svg(start=0, length=8)
+
+pattern = r'(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b'
+prog = re.compile(pattern, re.DOTALL)
+assert prog.match(svg_data) is not None
+
+wiretrace.display(start=0, length=8)
 # Dependencies:
 
 - viu (`git clone https://github.com/atanunq/viu.git viu/ && cd viu/ && cargo install --path .`)

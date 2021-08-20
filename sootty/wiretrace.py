@@ -1,4 +1,9 @@
+import json
+from pyDigitalWaveTools.vcd.parser import VcdParser
+
+from .display import display
 from .limits import LimitExpression
+from .visualizer import Visualizer
 
 class TraceError(Exception):
     """ Raised on any user-facing error in this module. """
@@ -25,7 +30,7 @@ class Wire:
                 return None
 
     @staticmethod
-    def parse_vcd(vcd_data, base_name=""):
+    def from_vcd(vcd_data, base_name=""):
         wiredata = []
         source_data = sorted(vcd_data["data"])
         source_dict = dict(source_data)
@@ -352,7 +357,7 @@ class WireGroup:
             self.add_wire(wire)
 
     @staticmethod
-    def parse_vcd(vcd_data, base_name=None):
+    def from_vcd(vcd_data, base_name=None):
         name = "" if base_name == None else (base_name + ('.' if len(base_name) else "") + vcd_data["name"])
         wiregroup = WireGroup(
             name=vcd_data["name"] if len(name) == 0 else name
@@ -360,11 +365,11 @@ class WireGroup:
         for child in vcd_data["children"]:
             if "data" in child:
                 wiregroup.add_wire(
-                    Wire.parse_vcd(child, name)
+                    Wire.from_vcd(child, name)
                 )
             else:
                 wiregroup.add_wires(
-                    WireGroup.parse_vcd(child, name)
+                    WireGroup.from_vcd(child, name)
                 )
         return wiregroup
 
@@ -377,11 +382,19 @@ class WireTrace:
         self.wiregroups.append(wiregroup)
 
     @staticmethod
-    def parse_vcd(vcd_data):
+    def read_vcd(filename):
+        with open(filename) as vcd_file:
+            vcd = VcdParser()
+            vcd.parse(vcd_file)
+            return vcd.scope.toJson()  # dump json here for debugging
+        
+    @staticmethod
+    def from_vcd_file(filename):
+        vcd_data = WireTrace.read_vcd(filename)  # Read vcd data from file
         wiretrace = WireTrace()
         for child in vcd_data["children"]:
             wiretrace.add_wiregroup(
-                WireGroup.parse_vcd(child)
+                WireGroup.from_vcd(child)
             )
         return wiretrace
 
@@ -462,14 +475,19 @@ class WireTrace:
         elif expr.data.type == "TIME":
             return Wire(name=f"t_{expr.data}", width=1, data=[0] * int(expr.children[0]) + [1, 0])
 
-    def compute_limits(self, start_expr: LimitExpression, end_expr: LimitExpression):
+    def compute_limits(self, start_expr, end_expr):
         try:
-            start = self.compute_wire(start_expr.tree).data.index(1)
+            start = self.compute_wire(LimitExpression(start_expr).tree).data.index(1)
         except ValueError:
             start = 0
         try:
-            end = self.compute_wire(end_expr.tree).data[start:].index(1) + start
+            end = self.compute_wire(LimitExpression(end_expr).tree).data[start:].index(1) + start
         except ValueError:
             end = self.length()
         return (start, end)
 
+    def to_svg(self, start=0, length=1, wires=set()):
+        return Visualizer.wiretrace_to_svg(self, start, length, wires)
+
+    def display(self, start=0, length=1, wires=set()):
+        display(self.to_svg(start, length, wires))
