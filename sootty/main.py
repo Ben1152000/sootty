@@ -1,11 +1,7 @@
 import sys, argparse
-from subprocess import call, Popen, STDOUT, PIPE
-from tempfile import NamedTemporaryFile
 
-from .limits import LimitExpression
+from .display import display
 from .wiretrace import WireTrace
-from .parser import parse_vcd
-from .visualizer import Visualizer
 
 def main():
 
@@ -18,20 +14,20 @@ def main():
     parser.add_argument('-w', '--wires', type=str, metavar='LIST', dest='wires', help='comma-separated list of wires to view')
     args = parser.parse_args()
 
-    wiretrace = parse_vcd(args.filename)
+    wiretrace = WireTrace.from_vcd_file(args.filename)
 
     if args.end is not None and args.length is not None:
         raise Exception('Length and end flags should not be provided simultaneously.')
     
     if args.end is not None:
         if args.start is not None:
-            start, end = wiretrace.compute_limits(LimitExpression(args.start), LimitExpression(args.end))
+            start, end = wiretrace.compute_limits(args.start, args.end)
         else:
-            start, end = wiretrace.compute_limits(LimitExpression('time 0'), LimitExpression(args.end))
+            start, end = wiretrace.compute_limits('time 0', args.end)
         length = end - start
     else:
         if args.start is not None:
-            start, end = wiretrace.compute_limits(LimitExpression(args.start), LimitExpression('time 0'))
+            start, end = wiretrace.compute_limits(args.start, 'time 0')
         else:
             start = 0
         length = args.length if args.length is not None else wiretrace.length() - start
@@ -40,16 +36,13 @@ def main():
     if args.wires:
         wires = set(args.wires.split(','))
     
-    svg_data = Visualizer.wiretrace_to_svg(
-        wiretrace=wiretrace, start=start, length=length, wires=wires)
+    svg_data = wiretrace.to_svg(start=start, length=length, wires=wires)
 
     if len(wires):
         raise Exception(f'Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}')
     
     if args.display:
-        with NamedTemporaryFile() as temp:
-            process = Popen(["rsvg-convert", "-x", "4", "-y", "4"], shell=False, stdin=PIPE, stdout=temp)
-            process.communicate(input=str.encode(svg_data))
-            call(["viu", temp.name], stdout=sys.stdout)
+        display(svg_data)
+    
     else:
         print(svg_data)
