@@ -31,7 +31,7 @@ How to run in python:
     wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
 
     # Convert wiretrace to svg:
-    svg_data = WireTrace.to_svg(start=0, length=8)
+    svg_data = wiretrace.to_svg(start=0, length=8)
     
     # Display to stdout:
     wiretrace.display(start=0, length=8)
