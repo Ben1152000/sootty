@@ -1,8 +1,10 @@
 # How to use
 
-The program can be installed by running the `install` bash script (optionally include `--user` to install locally)
+In order to build the project locally, cd into the sootty directory and run:
 
-Run:
+    python3 -m pip install .
+
+To use, run:
 
     sootty waveform.vcd > image.svg
 
