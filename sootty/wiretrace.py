@@ -485,9 +485,3 @@ class WireTrace:
         except ValueError:
             end = self.length()
         return (start, end)
-
-    def to_svg(self, start=0, length=1, wires=set()):
-        return Visualizer.wiretrace_to_svg(self, start, length, wires)
-
-    def display(self, start=0, length=1, wires=set()):
-        display(self.to_svg(start, length, wires))

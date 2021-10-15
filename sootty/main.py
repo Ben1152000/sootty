@@ -2,6 +2,7 @@ import sys, argparse
 
 from .display import display
 from .wiretrace import WireTrace
+from .visualizer import Visualizer
 
 def main():
 
@@ -36,7 +37,7 @@ def main():
     if args.wires:
         wires = set(args.wires.split(','))
     
-    svg_data = wiretrace.to_svg(start=start, length=length, wires=wires)
+    svg_data = Visualizer().to_svg(wiretrace, start=start, length=length, wires=wires)
 
     if len(wires):
         raise Exception(f'Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}')
