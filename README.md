@@ -27,16 +27,16 @@ Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal 
 
 How to run in python:
 
-    from sootty import WireTrace
+    from sootty import WireTrace, Visualizer, Style
 
     # Create wiretrace object from vcd file:
     wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
 
     # Convert wiretrace to svg:
-    svg_data = wiretrace.to_svg(start=0, length=8)
+    image = Visualizer(Style.Dark).to_svg(wiretrace, start=0, length=8)
     
     # Display to stdout:
-    wiretrace.display(start=0, length=8)
+    image.display()
 
 # Dependencies:
 
