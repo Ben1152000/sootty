@@ -50,3 +50,6 @@ def main():
     
     else:
         print(image.source)
+
+if __name__ == "__main__":
+    main()

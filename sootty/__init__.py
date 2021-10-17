@@ -1,5 +1,3 @@
-from .main import main
-
 from .display import VectorImage
 
 from .exceptions import SoottyError
