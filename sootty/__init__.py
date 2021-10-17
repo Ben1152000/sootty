@@ -1,13 +1,10 @@
 from .main import main
 
-from .display import display
+from .display import VectorImage
 
-from .visualizer import Visualizer
-from .visualizer import Style
-from .visualizer import LightStyle
-from .visualizer import SiliconStyle
+from .exceptions import SoottyError
+from .exceptions import SoottyInternalError
 
-from .wiretrace import Wire
-from .wiretrace import WireGroup
-from .wiretrace import WireTrace
-from .wiretrace import TraceError
+from .visualizer import Visualizer, Style
+
+from .wiretrace import Wire, WireGroup, WireTrace

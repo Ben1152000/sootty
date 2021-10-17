@@ -1,43 +1,51 @@
 import sys
-from .display import display
+
+from .display import VectorImage
+from .exceptions import SoottyInternalError
 
 
 class Style:
-    TOP_MARGIN = 15
-    LEFT_MARGIN = 15
-    TEXT_WIDTH = 100
-    DATA_WIDTH = 50
-    WIRE_HEIGHT = 20
-    WIRE_MARGIN = 10
-    TRANS_START = 5
-    TRANS_WIDTH = 5
-    BLOCK_TRANS = False
-    LINE_COLOR = "#FFFFFF"
-    TEXT_COLOR = "#FFFFFF"
-    BKGD_COLOR = "#000000"
+    """Container class for visualizer style settings."""
 
+    class Default():
+        TOP_MARGIN = 15
+        LEFT_MARGIN = 15
+        TEXT_WIDTH = 100
+        DATA_WIDTH = 50
+        WIRE_HEIGHT = 20
+        WIRE_MARGIN = 10
+        TRANS_START = 5
+        TRANS_WIDTH = 5
+        BLOCK_TRANS = False
+        LINE_COLOR = "#FFFFFF"
+        TEXT_COLOR = "#FFFFFF"
+        BKGD_COLOR = "#000000"
 
-class DarkStyle(Style):
-    pass
+    class Dark(Default):
+        pass
 
+    class Light(Default):
+        LINE_COLOR = "#000000"
+        TEXT_COLOR = "#000000"
+        BKGD_COLOR = "#FFFFFF"
 
-class LightStyle(Style):
-    LINE_COLOR = "#000000"
-    TEXT_COLOR = "#000000"
-    BKGD_COLOR = "#FFFFFF"
-
-
-class SiliconStyle(Style):
-    LINE_COLOR = "#B0B0B0"
-    TEXT_COLOR = "#30FF30"
-    BKGD_COLOR = "#003000"
+    class Silicon(Default):
+        LINE_COLOR = "#B0B0B0"
+        TEXT_COLOR = "#30FF30"
+        BKGD_COLOR = "#003000"
 
 
 class Visualizer:
+    """Converter for wiretrace objects to a svg vector image format."""
 
-    def __init__(self, style=Style):
+    def __init__(self, style=Style.Default):
+        """Optionally pass in a style class to control how the visualizer looks."""
         self.style = style
-    
+
+    def to_svg(self, wiretrace, start=0, length=1, wires=set()):
+        """Converts the provided wiretrace object to a VectorImage object (svg)."""
+        return VectorImage(self._wiretrace_to_svg(wiretrace, start, length, wires))
+
     def _wiretrace_to_svg(self, wiretrace, start, length, wires=None):
         width = 2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + length * self.style.DATA_WIDTH
         height = 2 * self.style.TOP_MARGIN + (len(wires) + 1) * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) - self.style.WIRE_MARGIN
@@ -146,12 +154,4 @@ class Visualizer:
                    f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
                    f'<text x="{left + self.style.TRANS_START + self.style.TRANS_WIDTH + 5}" y="{top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2}" class="small" fill="{self.style.TEXT_COLOR}">{"X" if value == None else hex(value)}</text>'
         else:
-            return 'ERROR'
-
-    def to_svg(self, wiretrace, start=0, length=1, wires=set()):
-        """Converts the provided wiretrace object to an svg."""
-        return self._wiretrace_to_svg(wiretrace, start, length, wires)
-
-    def display(self, wiretrace, start=0, length=1, wires=set()):
-        """Displays the provided wiretrace object to the terminal."""
-        display(self.to_svg(wiretrace, start, length, wires))
+            raise SoottyInternalError("Invalid wire transition, unable to visualize.")

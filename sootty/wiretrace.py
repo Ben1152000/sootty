@@ -1,13 +1,9 @@
 import json
 from pyDigitalWaveTools.vcd.parser import VcdParser
 
-from .display import display
+from .exceptions import SoottyInternalError
 from .limits import LimitExpression
-from .visualizer import Visualizer
 
-class TraceError(Exception):
-    """ Raised on any user-facing error in this module. """
-    pass
 
 class Wire:
 
@@ -343,6 +339,7 @@ class Wire:
             data=data
         )
 
+
 class WireGroup:
 
     def __init__(self, name):
@@ -372,6 +369,7 @@ class WireGroup:
                     WireGroup.from_vcd(child, name)
                 )
         return wiregroup
+
 
 class WireTrace:
 
@@ -412,7 +410,7 @@ class WireTrace:
             for wire in wiregroup.wires:
                 if wire.name == name:
                     return wire
-        raise TraceError(f"Wire '{name}' does not exist.")
+        raise SoottyInternalError(f"Wire '{name}' does not exist.")
     
     def get_wire_names(self):
         names = []
