@@ -396,6 +396,23 @@ class WireTrace:
             )
         return wiretrace
 
+    @staticmethod
+    def from_pyrtl(sim_trace):
+        """Parses a WireTrace object from a PyRTL SimulationTrace object.
+
+        :param SimulationTrace sim_trace: The object that stores the PyRTL tracer.
+        """
+        wiretrace = WireTrace()
+        wiregroup = WireGroup('main')
+        for wirename in sim_trace.trace:
+            wiregroup.add_wire(Wire(
+                name = wirename,
+                width = sim_trace._wires[wirename].bitwidth,
+                data = sim_trace.trace[wirename]
+            ))
+        wiretrace.add_wiregroup(wiregroup)
+        return wiretrace
+
     # Returns the time of the last entry in data
     def length(self):
         limit = 0
