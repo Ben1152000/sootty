@@ -1,7 +1,7 @@
 import sys, argparse
 
-from .display import display
 from .wiretrace import WireTrace
+from .visualizer import Visualizer
 
 def main():
 
@@ -14,11 +14,14 @@ def main():
     parser.add_argument('-w', '--wires', type=str, metavar='LIST', dest='wires', help='comma-separated list of wires to view')
     args = parser.parse_args()
 
+    # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd_file(args.filename)
 
+    # Check that window bounds are well-defined.
     if args.end is not None and args.length is not None:
         raise Exception('Length and end flags should not be provided simultaneously.')
     
+    # Calculate window bounds.
     if args.end is not None:
         if args.start is not None:
             start, end = wiretrace.compute_limits(args.start, args.end)
@@ -36,13 +39,17 @@ def main():
     if args.wires:
         wires = set(args.wires.split(','))
     
-    svg_data = wiretrace.to_svg(start=start, length=length, wires=wires)
+    # Convert wiretrace to graphical vector image.
+    image = Visualizer().to_svg(wiretrace, start=start, length=length, wires=wires)
 
     if len(wires):
         raise Exception(f'Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}')
     
     if args.display:
-        display(svg_data)
+        image.display()
     
     else:
-        print(svg_data)
+        print(image.source)
+
+if __name__ == "__main__":
+    main()

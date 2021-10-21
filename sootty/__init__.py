@@ -1,8 +1,8 @@
-from .main import main
+from .display import VectorImage
 
-from .display import display
+from .exceptions import SoottyError
+from .exceptions import SoottyInternalError
 
-from .wiretrace import Wire
-from .wiretrace import WireGroup
-from .wiretrace import WireTrace
-from .wiretrace import TraceError
+from .visualizer import Visualizer, Style
+
+from .wiretrace import Wire, WireGroup, WireTrace

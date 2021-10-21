@@ -1,3 +1,2 @@
 #! /bin/bash
-
-python3 setup.py clean --all install "$@"
+python3 -m pip install .

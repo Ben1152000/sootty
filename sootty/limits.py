@@ -5,11 +5,13 @@ try:
 except ImportError:
     import importlib_resources as pkg_resources
 
+# Read and interpret grammar file.
 from . import static
 parser = Lark(pkg_resources.open_text(static, "grammar.lark").read())
 
 
 class Prune(Visitor):
+    """Visitor class used to prune the parse tree to make it easier to interpret."""
 
     def binexp(self, tree):
         if len(tree.children) == 1:
@@ -53,16 +55,10 @@ class Prune(Visitor):
             tree.data = tree.children[1].children[0]
             tree.children = [tree.children[0], tree.children[2]]
 
+
 class LimitExpression:
+    """Parses an expression representing the limits of a wiretrace window."""
 
     def __init__(self, expression):
         parsed = parser.parse(expression)
         self.tree = Prune().visit(parsed)
-
-if __name__ == "__main__":
-
-    print(LimitExpression("a + b & c - d + const 1").tree.pretty(' '))
-
-    print(LimitExpression("after (acc clk == const 5) & ready & value & (3 next data == const 64)").tree)
-
-    print(LimitExpression("D1 & D2").tree)
