@@ -1,18 +1,22 @@
 import re, sys
 from subprocess import call, Popen, STDOUT, PIPE
-
 from sootty import WireTrace, Visualizer, VectorImage
 
-wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
 
-assert type(wiretrace) == WireTrace
+def test_svg_output():
+    wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
 
-image = Visualizer().to_svg(wiretrace, start=0, length=8)
+    assert type(wiretrace) == WireTrace
 
-pattern = r'(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b'
-prog = re.compile(pattern, re.DOTALL)
-assert prog.match(image.source) is not None
+    image = Visualizer().to_svg(wiretrace, start=0, length=8)
 
-image.display()
+    pattern = r'(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b'
+    prog = re.compile(pattern, re.DOTALL)
+    assert prog.match(image.source) is not None
 
-print("Success!")
+    image.display()
+
+
+if __name__ == "__main__":
+    test_svg_output()
+    print('Success!')

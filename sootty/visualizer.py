@@ -42,7 +42,9 @@ class Visualizer:
         """Optionally pass in a style class to control how the visualizer looks."""
         self.style = style
 
-    def to_svg(self, wiretrace, start=0, length=1, wires=set()):
+    def to_svg(self, wiretrace, start=0, length=None, wires=set()):
+        if length is None:
+            length = wiretrace.length()
         """Converts the provided wiretrace object to a VectorImage object (svg)."""
         return VectorImage(self._wiretrace_to_svg(wiretrace, start, length, wires))
 
