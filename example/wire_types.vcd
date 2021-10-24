@@ -1,0 +1,15 @@
+$date Sun Oct 24 13:51:17 2021 $end
+$version libsigrok 0.6.0-git-c03aaf342c3f $end
+$comment
+Testing all possible one-bit values in verilog: 00110XX1X0ZZXZ1Z0
+$end
+$timescale 1 us $end
+$scope module libsigrok $end
+$var wire 1 ! wire $end
+$upscope $end
+$enddefinitions $end
+
+ #0 b0 !  #1 b0 ! 
+ #2 b1 !  #3 b1 !  #4 b0 ! 
+ #5 bX !  #6 bX !  #7 b1 !  #8 bX !  #9 b0 ! 
+#10 bZ ! #11 bZ ! #12 bX ! #13 bZ ! #14 b1 ! #15 bZ ! #16 b0 !
