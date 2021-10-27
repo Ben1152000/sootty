@@ -116,6 +116,8 @@ class Visualizer:
         value_type = 'low' if value is False else ('high' if value is True else 'data')
         is_transitioning = (prev != value)
 
+        # The following code builds a list of svg objects depending on the 
+        # current and previous value of the wire.
         shapes = []
         if prev_type == 'low' and value_type == 'low':
             shapes.append({
