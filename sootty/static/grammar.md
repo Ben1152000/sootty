@@ -1,7 +1,7 @@
 
-# Sootty Temporal Logic Language:
+# Sootty Timing Expressions:
 
-Sootty provides a temporal logic language that is used to define the bounds of the displayed window. This language can select points in time within time-series data. Each expression represents the value of a n-bit vector over time. The language allows for both combinational expressions that are time-independent and some temporal expressions, including from, after, until, etc., that are time-dependent. The selected points in time for a given expression are defined as following each rising edge of the wire. When only a single point is needed, the first rising edge is used and the rest are discarded.
+Sootty provides a temporal-logic language that is used to define the bounds of the displayed window. This language can select points in time within time-series data. Each expression represents the value of a n-bit vector over time. The language allows for both combinational expressions that are time-independent and some temporal expressions, including from, after, until, etc., that are time-dependent. The selected points in time for a given expression are defined as following each rising edge of the wire. When only a single point is needed, the first rising edge is used and the rest are discarded.
 
 The grammar for the temporal logic expression is described below:
 
