@@ -132,45 +132,278 @@ class Visualizer:
         value_type = 'low' if value is False else ('high' if value is True else 'data')
         is_transitioning = (prev != value)
 
+        # The following code builds a list of svg objects depending on the 
+        # current and previous value of the wire.
+        shapes = []
         if prev_type == 'low' and value_type == 'low':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
         elif prev_type == 'low' and value_type == 'high':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
         elif prev_type == 'low' and value_type == 'data':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
         elif prev_type == 'high' and value_type == 'low':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'y1': top,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
         elif prev_type == 'high' and value_type == 'high':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
         elif prev_type == 'high' and value_type == 'data':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
         elif prev_type == 'data' and value_type == 'low':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
         elif prev_type == 'data' and value_type == 'high':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
         elif prev_type == 'data' and value_type == 'data' and not is_transitioning and not initial:
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
         elif prev_type == 'data' and value_type == 'data':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
-                   f'<text x="{left + self.style.TRANS_START + self.style.TRANS_WIDTH + 5}" y="{top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2}" class="small" fill="{self.style.TEXT_COLOR}">{"X" if value == None else hex(value)}</text>'
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.TRANS_START,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'text',
+                'x': left + self.style.TRANS_START + self.style.TRANS_WIDTH + 5,  # TODO: generalize formula
+                'y': top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
+                'class': 'small',
+                'fill': self.style.TEXT_COLOR,
+                'content': ("X" if value == None else hex(value))
+            })
         else:
             raise SoottyInternalError("Invalid wire transition, unable to visualize.")
+        
+        svg_data = ''
+        for shape in shapes:
+            start_tag = '<' + str(shape['name'])
+            end_tag = ' />'
+            for prop in shape:
+                if prop == 'content':
+                    end_tag = '>' + str(shape['content']) + '</' + str(shape['name']) + '>'
+                elif prop != 'name':
+                    start_tag += ' ' + prop + '="' + str(shape[prop]) + '"'
+            svg_data += start_tag + end_tag
+        return svg_data
