@@ -17,7 +17,7 @@ class Style:
         TRANS_START = 5
         TRANS_WIDTH = 5
         BLOCK_TRANS = False
-        LINE_COLOR = "#FFFFFF" #line color now needs to be its own class (?) depending on wires and variables*
+        LINE_COLOR = "#FFFFFF" #line color now needs to be its own class (?) depending on wires and variables
         LINE_COLOR_HIGH = "#00FF00"
         LINE_COLOR_LOW = "#3DB8B8"
         LINE_COLOR_Z = "#FFFF00"
@@ -25,7 +25,8 @@ class Style:
         LINE_COLOR_DATA = "#3DB8B8"
         TEXT_COLOR = "#FFFFFF"
         BKGD_COLOR = "#000000"
-    #wires going from 0 and 1 are two different colors, x variable is red rectangle, z variable is yellow
+        #wires going from 0 and 1 are two different colors, x variable is red rectangle, z variable is yellow
+
     class Dark(Default):
         pass
 
@@ -171,6 +172,5 @@ class Visualizer:
                    f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
                    f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
                    f'<text x="{left + self.style.TRANS_START + self.style.TRANS_WIDTH + 5}" y="{top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2}" class="small" fill="{self.style.TEXT_COLOR}">{"X" if value == None else hex(value)}</text>'
-        
         else:
             raise SoottyInternalError("Invalid wire transition, unable to visualize.")
