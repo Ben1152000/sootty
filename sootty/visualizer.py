@@ -131,23 +131,6 @@ class Visualizer:
         value_type = 'low' if value is False else ('high' if value is True else 'data')
         is_transitioning = (prev != value)
 
-        # if prev_type == 'low' and value_type == 'low':
-        #     shapes = [
-        #         {
-        #             "name": "line", 
-        #             "x1": "", 
-        #             "x2": "", 
-        #             "y1": "", 
-        #             "y2": ""
-        #         },
-        #         {
-        #             "name": "line", 
-        #             "x1": "", 
-        #             "x2": "", 
-        #             "y1": "", 
-        #             "y2": ""
-        #         },
-        #     ]
         if prev_type == 'low' and value_type == 'low':
             return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />'
         elif prev_type == 'low' and value_type == 'high':
@@ -188,5 +171,6 @@ class Visualizer:
                    f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
                    f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
                    f'<text x="{left + self.style.TRANS_START + self.style.TRANS_WIDTH + 5}" y="{top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2}" class="small" fill="{self.style.TEXT_COLOR}">{"X" if value == None else hex(value)}</text>'
+        
         else:
             raise SoottyInternalError("Invalid wire transition, unable to visualize.")
