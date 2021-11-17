@@ -1,8 +1,6 @@
 $date Fri Jul 24 13:51:17 2020 $end
 $version libsigrok 0.6.0-git-c03aaf342c3f $end
-$comment
-Acquisition with 6/6 channels at 200 kHz
-$end
+$comment Acquisition with 6/6 channels at 200 kHz $end
 $timescale 1 us $end
 $scope module libsigrok $end
 $var wire 1 ! D0 $end

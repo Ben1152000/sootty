@@ -359,7 +359,7 @@ class Visualizer:
                 'y': top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
                 'class': 'small',
                 'fill': self.style.TEXT_COLOR,
-                'content': ("X" if value == None else hex(value))
+                'content': ('a' if (type(value) is int) else 'a')
             })
         else:
             raise SoottyInternalError("Invalid wire transition, unable to visualize.")

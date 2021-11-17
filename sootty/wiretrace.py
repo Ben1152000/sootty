@@ -1,16 +1,18 @@
 import json
 from pyDigitalWaveTools.vcd.parser import VcdParser
+from vcd.reader import *
 
-from .exceptions import SoottyInternalError
+
+from .exceptions import *
 from .limits import LimitExpression
 
 
 class Wire:
 
-    def __init__(self, name, width=1, data=[]):
+    def __init__(self, name, width=1, data=None):
         self.name = name
         self.width = width
-        self.data = data
+        self.data = list() if data is None else data
     
     @staticmethod
     def _to_int(data):
@@ -395,6 +397,113 @@ class WireTrace:
                 WireGroup.from_vcd(child)
             )
         return wiretrace
+
+    @staticmethod
+    def from_vcd(filename):
+        """
+        Construct a WireTrace object from a parsed vcd file, using the pyvcd library.
+
+        Syntax of four-state VCD file (IEEE 1364-2005 §18.2.1):
+
+        value_change_dump_definitions ::= 
+            { declaration_command }{ simulation_command }
+        declaration_command ::= 
+            declaration_keyword 
+            [ command_text ] 
+            $end
+        simulation_command ::=
+            simulation_keyword { value_change } $end
+            | $comment [ comment_text ] $end
+            | simulation_time
+            | value_change
+        declaration_keyword ::=
+            $comment | $date | $enddefinitions | $scope | $timescale | $upscope
+            | $var | $version
+        simulation_keyword ::=
+            $dumpall | $dumpoff | $dumpon | $dumpvars
+        simulation_time ::=
+            # decimal_number
+        value_change ::=
+            scalar_value_change
+            | vector_value_change
+        scalar_value_change ::=
+            value identifier_code
+        value ::=
+            0 | 1 | x | X | z | Z
+        vector_value_change ::=
+            b binary_number identifier_code
+            | B binary_number identifier_code
+            | r real_number identifier_code
+            | R real_number identifier_code
+        identifier_code ::=
+            { ASCII character }
+        """
+
+        this = WireTrace()
+        this.metadata = dict()  # dictionary of vcd metadata
+        wires = dict()  # map from id_code to wire object
+
+        with open(filename, 'rb') as stream:
+            tokens = tokenize(stream)
+            for token in tokens:
+                if token.kind is TokenKind.COMMENT:
+                    this.metadata['comment'] = token.comment
+                elif token.kind is TokenKind.DATE:
+                    this.metadata['date'] = token.date
+                elif token.kind is TokenKind.ENDDEFINITIONS:
+                    break  # end of definitions
+                elif token.kind is TokenKind.SCOPE:
+                    pass  # implement scoping
+                elif token.kind is TokenKind.TIMESCALE:
+                    this.metadata['timescale'] = token.timescale
+                elif token.kind is TokenKind.UPSCOPE:
+                    pass  # implement scoping
+                elif token.kind is TokenKind.VAR:
+                    wires[token.var.id_code] = Wire(
+                        name=token.var.reference,
+                        width=token.var.size,
+                    )
+                elif token.kind is TokenKind.VERSION:
+                    this.metadata['version'] = token.version
+                else:
+                    raise SoottyError(f'Invalid vcd token when parsing: {token}')
+        
+            time = None
+            for token in tokens:
+                if token.kind is TokenKind.CHANGE_TIME:
+                    time = token.time_change
+                elif token.kind is TokenKind.CHANGE_SCALAR:
+                    value = token.scalar_change.value
+                    value = int(value) if value in ('0', '1') else value
+                    wires[token.scalar_change.id_code].data.append(value)  # TODO: fix to use time
+                elif token.kind is TokenKind.CHANGE_VECTOR:
+                    value = token.vector_change.value
+                    wires[token.vector_change.id_code].data.append(value)  # TODO: fix to use time
+                elif token.kind is TokenKind.CHANGE_REAL:
+                    print(token.real_change)
+                    raise SoottyInternalError(f'You forgot to implement token CHANGE_REAL.')
+                elif token.kind is TokenKind.CHANGE_STRING:
+                    print(token.string_change)
+                    raise SoottyInternalError(f'You forgot to implement token CHANGE_STRING.')
+                elif token.kind is TokenKind.DUMPALL:
+                    pass  # not sure what to do here
+                elif token.kind is TokenKind.DUMPOFF:
+                    pass  # not sure what to do here
+                elif token.kind is TokenKind.DUMPON:
+                    pass  # not sure what to do here
+                elif token.kind is TokenKind.DUMPVARS:
+                    pass  # not sure what to do here
+                elif token.kind is TokenKind.END:
+                    pass  # not sure what to do here
+                else:
+                    raise SoottyError(f'Invalid vcd token when parsing: {token}')
+
+            group = WireGroup("")
+            for wire in wires:
+                group.add_wire(wires[wire])
+            this.add_wiregroup(group)
+
+            return this
 
     @staticmethod
     def from_pyrtl(sim_trace):
