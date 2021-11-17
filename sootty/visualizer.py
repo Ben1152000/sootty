@@ -17,22 +17,38 @@ class Style:
         TRANS_START = 5
         TRANS_WIDTH = 5
         BLOCK_TRANS = False
-        LINE_COLOR = "#FFFFFF"
+        LINE_COLOR = "#FFFFFF" #line color now needs to be its own class (?) depending on wires and variables
+        LINE_COLOR_HIGH = "#00FF00"
+        LINE_COLOR_LOW = "#3DB8B8"
+        LINE_COLOR_Z = "#FFFF00"
+        LINE_COLOR_X = "#FF0000"
+        LINE_COLOR_DATA = "#3DB8B8"
         TEXT_COLOR = "#FFFFFF"
         BKGD_COLOR = "#000000"
+        #wires going from 0 and 1 are two different colors, x variable is red rectangle, z variable is yellow
 
     class Dark(Default):
         pass
 
     class Light(Default):
         LINE_COLOR = "#000000"
+        LINE_COLOR_HIGH = "#2e9947"
+        LINE_COLOR_LOW = "#1b7280"
+        LINE_COLOR_Z = "#b5a600"
+        LINE_COLOR_X = "#8a0000"
         TEXT_COLOR = "#000000"
         BKGD_COLOR = "#FFFFFF"
 
     class Silicon(Default):
-        LINE_COLOR = "#B0B0B0"
-        TEXT_COLOR = "#30FF30"
-        BKGD_COLOR = "#003000"
+        LINE_COLOR = "#000000"
+        LINE_COLOR_HIGH = "#FFFFFF"
+        LINE_COLOR_LOW = "#a8acad"
+        LINE_COLOR_Z = "#7a5b1b"
+        LINE_COLOR_X = "#faf6bb"
+        #TEXT_COLOR = "#30FF30"
+        TEXT_COLOR = "#FFFFFF"
+        #BKGD_COLOR = "#003000"
+        BKGD_COLOR = "#2b5e2b"
 
 
 class Visualizer:
@@ -117,43 +133,44 @@ class Visualizer:
         is_transitioning = (prev != value)
 
         if prev_type == 'low' and value_type == 'low':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />'
         elif prev_type == 'low' and value_type == 'high':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />' \
+                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />'
         elif prev_type == 'low' and value_type == 'data':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />'
         elif prev_type == 'high' and value_type == 'low':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />' \
+                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_LOW}" />'
         elif prev_type == 'high' and value_type == 'high':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_HIGH}" />'
         elif prev_type == 'high' and value_type == 'data':
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />'
         elif prev_type == 'data' and value_type == 'low':
             return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
                    f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />'
+                   f'<line x1="{left}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />'
         elif prev_type == 'data' and value_type == 'high':
             return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
                    f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
                    f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />'
         elif prev_type == 'data' and value_type == 'data' and not is_transitioning and not initial:
-            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />'
+            return f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />'
         elif prev_type == 'data' and value_type == 'data':
-            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
-                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR}" />' \
+            return f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left}" x2="{left + self.style.TRANS_START}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top + self.style.WIRE_HEIGHT}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START}" x2="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" y1="{top + self.style.WIRE_HEIGHT}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
+                   f'<line x1="{left + self.style.TRANS_START + self.style.TRANS_WIDTH}" x2="{left + self.style.DATA_WIDTH}" y1="{top}" y2="{top}" stroke="{self.style.LINE_COLOR_DATA}" />' \
                    f'<text x="{left + self.style.TRANS_START + self.style.TRANS_WIDTH + 5}" y="{top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2}" class="small" fill="{self.style.TEXT_COLOR}">{"X" if value == None else hex(value)}</text>'
         else:
             raise SoottyInternalError("Invalid wire transition, unable to visualize.")
