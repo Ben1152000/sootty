@@ -1,7 +1,6 @@
 import json
-from pyDigitalWaveTools.vcd.parser import VcdParser
+# from pyDigitalWaveTools.vcd.parser import VcdParser
 from vcd.reader import *
-
 
 from .exceptions import *
 from .limits import LimitExpression
@@ -14,40 +13,40 @@ class Wire:
         self.width = width
         self.data = list() if data is None else data
     
-    @staticmethod
-    def _to_int(data):
-        if data[0] == 'b':
-            try:
-                return int(data[1:], 2)
-            except ValueError:
-                return None
-        else:
-            try:
-                return int(data)
-            except ValueError:
-                return None
+    # @staticmethod
+    # def _to_int(data):
+    #     if data[0] == 'b':
+    #         try:
+    #             return int(data[1:], 2)
+    #         except ValueError:
+    #             return None
+    #     else:
+    #         try:
+    #             return int(data)
+    #         except ValueError:
+    #             return None
 
-    @staticmethod
-    def from_vcd(vcd_data, base_name=""):
-        wiredata = []
-        source_data = sorted(vcd_data["data"])
-        source_dict = dict(source_data)
-        time = 0
-        end = source_data[-1][0] if len(source_data) else 0
-        while time <= end:
-            if time in source_dict:
-                wiredata.append(Wire._to_int(source_dict[time]))
-            elif time > 0:
-                wiredata.append(wiredata[-1])
-            else:
-                wiredata.append(None)
-            time += 1
+    # @staticmethod
+    # def from_vcd(vcd_data, base_name=""):
+    #     wiredata = []
+    #     source_data = sorted(vcd_data["data"])
+    #     source_dict = dict(source_data)
+    #     time = 0
+    #     end = source_data[-1][0] if len(source_data) else 0
+    #     while time <= end:
+    #         if time in source_dict:
+    #             wiredata.append(Wire._to_int(source_dict[time]))
+    #         elif time > 0:
+    #             wiredata.append(wiredata[-1])
+    #         else:
+    #             wiredata.append(None)
+    #         time += 1
         
-        return Wire(
-            name=base_name + ('.' if len(base_name) else "") + vcd_data["name"],
-            width=vcd_data["type"]["width"],
-            data=wiredata
-        )
+    #     return Wire(
+    #         name=base_name + ('.' if len(base_name) else "") + vcd_data["name"],
+    #         width=vcd_data["type"]["width"],
+    #         data=wiredata
+    #     )
 
     def __invert__(self):
         data = []
@@ -355,22 +354,22 @@ class WireGroup:
         for wire in wiregroup.wires:
             self.add_wire(wire)
 
-    @staticmethod
-    def from_vcd(vcd_data, base_name=None):
-        name = "" if base_name == None else (base_name + ('.' if len(base_name) else "") + vcd_data["name"])
-        wiregroup = WireGroup(
-            name=vcd_data["name"] if len(name) == 0 else name
-        )
-        for child in vcd_data["children"]:
-            if "data" in child:
-                wiregroup.add_wire(
-                    Wire.from_vcd(child, name)
-                )
-            else:
-                wiregroup.add_wires(
-                    WireGroup.from_vcd(child, name)
-                )
-        return wiregroup
+    # @staticmethod
+    # def from_vcd(vcd_data, base_name=None):
+    #     name = "" if base_name == None else (base_name + ('.' if len(base_name) else "") + vcd_data["name"])
+    #     wiregroup = WireGroup(
+    #         name=vcd_data["name"] if len(name) == 0 else name
+    #     )
+    #     for child in vcd_data["children"]:
+    #         if "data" in child:
+    #             wiregroup.add_wire(
+    #                 Wire.from_vcd(child, name)
+    #             )
+    #         else:
+    #             wiregroup.add_wires(
+    #                 WireGroup.from_vcd(child, name)
+    #             )
+    #     return wiregroup
 
 
 class WireTrace:
@@ -381,22 +380,22 @@ class WireTrace:
     def add_wiregroup(self, wiregroup):
         self.wiregroups.append(wiregroup)
 
-    @staticmethod
-    def read_vcd(filename):
-        with open(filename) as vcd_file:
-            vcd = VcdParser()
-            vcd.parse(vcd_file)
-            return vcd.scope.toJson()  # dump json here for debugging
+    # @staticmethod
+    # def read_vcd(filename):
+    #     with open(filename) as vcd_file:
+    #         vcd = VcdParser()
+    #         vcd.parse(vcd_file)
+    #         return vcd.scope.toJson()  # dump json here for debugging
         
-    @staticmethod
-    def from_vcd_file(filename):
-        vcd_data = WireTrace.read_vcd(filename)  # Read vcd data from file
-        wiretrace = WireTrace()
-        for child in vcd_data["children"]:
-            wiretrace.add_wiregroup(
-                WireGroup.from_vcd(child)
-            )
-        return wiretrace
+    # @staticmethod
+    # def from_vcd_file(filename):
+    #     vcd_data = WireTrace.read_vcd(filename)  # Read vcd data from file
+    #     wiretrace = WireTrace()
+    #     for child in vcd_data["children"]:
+    #         wiretrace.add_wiregroup(
+    #             WireGroup.from_vcd(child)
+    #         )
+    #     return wiretrace
 
     @staticmethod
     def from_vcd(filename):

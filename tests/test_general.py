@@ -4,7 +4,7 @@ from sootty import WireTrace, Visualizer, VectorImage
 
 
 def test_svg_output():
-    wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
+    wiretrace = WireTrace.from_vcd("example/example1.vcd")
 
     assert type(wiretrace) == WireTrace
 
