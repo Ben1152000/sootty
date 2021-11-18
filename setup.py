@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 
 setuptools.setup( 
     name='sootty',
-    version='0.1',
+    version='0.2.1',
     description='Displays vcd files to the command line.', 
     long_description=README,
     packages=setuptools.find_packages(exclude=("tests",)), 
@@ -22,14 +22,14 @@ setuptools.setup(
     entry_points={ 
         'console_scripts': [ 
             'sootty = sootty.__main__:main'
-        ] 
+        ]
     },
     package_data={
         "sootty.static": ["*.lark"],
     },
     install_requires=[
-        'lark',
-        'pyDigitalWaveTools'
+        'lark>=1',
+        'pyvcd>=0.3',
     ],
     dependency_links=[
         'https://github.com/Nic30/pyDigitalWaveTools.git'

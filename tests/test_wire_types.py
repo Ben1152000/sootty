@@ -3,7 +3,7 @@ from sootty import WireTrace, Visualizer
 
 
 def test_data_types():
-    wiretrace = WireTrace.from_vcd_file("example/wire_types.vcd")
+    wiretrace = WireTrace.from_vcd("example/wire_types.vcd")
     Visualizer().to_svg(wiretrace).display()
 
 

@@ -1,4 +1,5 @@
 import sys
+from enum import Enum
 
 from .display import VectorImage
 from .exceptions import SoottyInternalError
@@ -120,22 +121,50 @@ class Visualizer:
             prev = (wire.data[index - 1] if index > 0 else wire.data[index]) if index < len(wire.data) else wire.data[-1]
             value = wire.data[index] if index < len(wire.data) else wire.data[-1]
             svg += self._value_to_svg(
-                prev = bool(prev) if wire.width == 1 else prev,
-                value = bool(value) if wire.width == 1 else value,
+                prev = prev,
+                value = value,
+                width = wire.width,
                 left = left + ((index - start) * self.style.DATA_WIDTH) + self.style.TEXT_WIDTH,
                 top = top,
                 initial = (index == start))
         return svg
 
-    def _value_to_svg(self, prev, value, left, top, initial=False):
-        prev_type = 'low' if prev is False else ('high' if prev is True else 'data')
-        value_type = 'low' if value is False else ('high' if value is True else 'data')
+    class ValueType(Enum):
+        LOW = 0
+        HIGH = 1
+        DATA = 2
+        X = 3
+        Z = 4
+
+    @staticmethod
+    def type_from_value(value, width=1):
+        if width == 1:
+            if value in (0, '0'):
+                return Visualizer.ValueType.LOW
+            elif value in (1, '1'):
+                return Visualizer.ValueType.HIGH
+            elif value in ('x', 'X'):
+                return Visualizer.ValueType.X
+            elif value in ('z', 'Z'):
+                return Visualizer.ValueType.Z
+            else:
+                raise SoottyInternalError(f'Invalid wire value, unable to visualize: {value}')
+        else:
+            if 'x' in str(value):
+                return Visualizer.ValueType.X
+            else:
+                return Visualizer.ValueType.DATA
+
+    def _value_to_svg(self, prev, value, width, left, top, initial=False):
+        # deduce types from wire width and value:
+        prev_type = Visualizer.type_from_value(prev, width)
+        value_type = Visualizer.type_from_value(value, width)
         is_transitioning = (prev != value)
 
         # The following code builds a list of svg objects depending on the 
         # current and previous value of the wire.
         shapes = []
-        if prev_type == 'low' and value_type == 'low':
+        if prev_type is Visualizer.ValueType.LOW and value_type is Visualizer.ValueType.LOW:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -144,7 +173,7 @@ class Visualizer:
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
             })
-        elif prev_type == 'low' and value_type == 'high':
+        elif prev_type is Visualizer.ValueType.LOW and value_type is Visualizer.ValueType.HIGH:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -169,32 +198,7 @@ class Visualizer:
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
             })
-        elif prev_type == 'low' and value_type == 'data':
-            shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
-                'stroke': self.style.LINE_COLOR_DATA,
-            })
-            shapes.append({
-                'name': 'line',
-                'x1': left + self.style.TRANS_START,
-                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_DATA,
-            })
-            shapes.append({
-                'name': 'line',
-                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_DATA,
-            })
-        elif prev_type == 'high' and value_type == 'low':
+        elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.LOW:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -219,7 +223,7 @@ class Visualizer:
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
             })
-        elif prev_type == 'high' and value_type == 'high':
+        elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.HIGH:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -228,7 +232,32 @@ class Visualizer:
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
             })
-        elif prev_type == 'high' and value_type == 'data':
+        elif prev_type is Visualizer.ValueType.LOW and value_type is Visualizer.ValueType.DATA:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_DATA,
+            })
+        elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.DATA:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -253,7 +282,7 @@ class Visualizer:
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_DATA,
             })
-        elif prev_type == 'data' and value_type == 'low':
+        elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.LOW:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -286,7 +315,7 @@ class Visualizer:
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
             })
-        elif prev_type == 'data' and value_type == 'high':
+        elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.HIGH:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -319,7 +348,7 @@ class Visualizer:
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
             })
-        elif prev_type == 'data' and value_type == 'data' and not is_transitioning and not initial:
+        elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.DATA and not is_transitioning and not initial:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -336,7 +365,7 @@ class Visualizer:
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_DATA,
             })
-        elif prev_type == 'data' and value_type == 'data':
+        elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.DATA:
             shapes.append({
                 'name': 'line',
                 'x1': left,
@@ -391,10 +420,284 @@ class Visualizer:
                 'y': top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
                 'class': 'small',
                 'fill': self.style.TEXT_COLOR,
-                'content': ("X" if value == None else hex(value))
+                'content': value
+            })
+        # TODO: figure out how to display X values in svg:
+        elif prev_type is Visualizer.ValueType.LOW and value_type is Visualizer.ValueType.X:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.X:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.X:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.LOW:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.HIGH:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.DATA:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.X:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        # TODO: figure out how to display Z values in svg:
+        elif prev_type is Visualizer.ValueType.LOW and value_type is Visualizer.ValueType.Z:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.Z:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.Z:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_X,
+            })
+        elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.Z:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.LOW:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.HIGH:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.DATA:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.X:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+        elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.Z:
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_Z,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left,
+                'x2': left + self.style.DATA_WIDTH,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_Z,
             })
         else:
-            raise SoottyInternalError("Invalid wire transition, unable to visualize.")
+            raise SoottyInternalError(f"Invalid wire transition, unable to visualize: {prev_type} to {value_type}")
         
         svg_data = ''
         for shape in shapes:

@@ -28,7 +28,7 @@ def main():
     args = parser.parse_args()
 
     # Load vcd file into wiretrace object.
-    wiretrace = WireTrace.from_vcd_file(args.filename)
+    wiretrace = WireTrace.from_vcd(args.filename)
 
     # Check that window bounds are well-defined.
     if args.end is not None and args.length is not None:

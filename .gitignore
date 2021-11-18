@@ -1,8 +1,5 @@
 __pycache__
-dump.json
 .DS_Store
 build
 dist
 sootty.egg-info
-pyDigitalWaveTools
-viu/
