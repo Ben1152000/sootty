@@ -1,8 +1,8 @@
 # How to use
 
-In order to build the project locally, cd into the sootty directory and run:
+This library can be installed from PyPi:
 
-    python3 -m pip install .
+    python3 -m pip install sootty
 
 To use, run:
 
@@ -15,7 +15,7 @@ with a vcs file to produce an svg waveform diagram. Optional arguments include:
 - `-d` Display the output to the terminal (requires viu).
 - `-w | --wires LIST` Comma-separated list of wires to include in the visualization (default to all wires).
 
-### Examples:
+## Examples:
 
 Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
 
@@ -25,7 +25,7 @@ Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal 
 
     sootty example/example1.vcd -l 8 -s "Data == const 20" -w "D1,Data" -d
 
-How to run in python:
+How to run in python (using the repl):
 
     from sootty import WireTrace, Visualizer, Style
 
@@ -41,5 +41,4 @@ How to run in python:
 # Dependencies:
 
 - viu (`git clone https://github.com/atanunq/viu.git viu/ && cd viu/ && cargo install --path .`)
-- pyDigitalWaveTools (`git clone https://github.com/Nic30/pyDigitalWaveTools.git pyDigitalWaveTools/ && cd pyDigitalWaveTools/ && python3 -m pip install .`) *YOU MUST INSTALL THIS FROM SOURCE!!!*
 - rsvg-convert (`brew install librsvg`)
