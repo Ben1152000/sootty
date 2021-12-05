@@ -16,6 +16,9 @@ def main():
     parser.add_argument('-e', '--end', 
         type=str, metavar='FORMULA', dest='end', 
         help='formula for the end of the window')
+    parser.add_argument('-b', '--break',
+        type=str, metavar='FORMULA', dest='breakpoints',
+        help='formula for the points in time to be highlighted')
     parser.add_argument('-l', '--length', 
         type=int, dest='length', 
         help='number of cycles to display')
@@ -48,12 +51,17 @@ def main():
             start = 0
         length = args.length if args.length is not None else wiretrace.length() - start
     
+    # Calculate breakpoints
+    breakpoints = None
+    if args.breakpoints is not None:
+        breakpoints = wiretrace.evaluate(args.breakpoints)
+
     wires = set()
     if args.wires:
         wires = set(args.wires.split(','))
     
     # Convert wiretrace to graphical vector image.
-    image = Visualizer().to_svg(wiretrace, start=start, length=length, wires=wires)
+    image = Visualizer().to_svg(wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints)
 
     if len(wires):
         raise Exception(f'Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}')

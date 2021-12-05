@@ -1,6 +1,6 @@
 import re, sys
 from subprocess import call, Popen, STDOUT, PIPE
-from sootty import WireTrace, Visualizer, VectorImage
+from sootty import WireTrace, Visualizer, VectorImage, Style
 
 
 def test_svg_output():
@@ -16,7 +16,27 @@ def test_svg_output():
 
     image.display()
 
+def test_scope():
+    wiretrace = WireTrace().from_vcd("example/example2.vcd")
+
+    assert type(wiretrace) == WireTrace
+
+    # def print_group(group, depth=0):
+    #     for wire in group.wires:
+    #         print('\t' * depth + wire.name)
+    #     for group in group.groups:
+    #         print('\t' * depth + group.name + ':')
+    #         print_group(group, depth + 1)
+    
+    # print_group(wiretrace.root)
+
+    assert wiretrace.num_wires() == 26
+
+    image = Visualizer().to_svg(wiretrace, start=0, length=8)
+
+    image.display()
 
 if __name__ == "__main__":
     test_svg_output()
+    test_scope()
     print('Success!')
