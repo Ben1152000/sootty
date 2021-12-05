@@ -1,4 +1,4 @@
-import json
+import json, sys
 # from pyDigitalWaveTools.vcd.parser import VcdParser
 from vcd.reader import *
 
@@ -13,40 +13,22 @@ class Wire:
         self.width = width
         self.data = list() if data is None else data
     
-    # @staticmethod
-    # def _to_int(data):
-    #     if data[0] == 'b':
-    #         try:
-    #             return int(data[1:], 2)
-    #         except ValueError:
-    #             return None
-    #     else:
-    #         try:
-    #             return int(data)
-    #         except ValueError:
-    #             return None
+    def length(self):
+        """Returns the time duration of the wire."""
+        return len(self.data)
 
-    # @staticmethod
-    # def from_vcd(vcd_data, base_name=""):
-    #     wiredata = []
-    #     source_data = sorted(vcd_data["data"])
-    #     source_dict = dict(source_data)
-    #     time = 0
-    #     end = source_data[-1][0] if len(source_data) else 0
-    #     while time <= end:
-    #         if time in source_dict:
-    #             wiredata.append(Wire._to_int(source_dict[time]))
-    #         elif time > 0:
-    #             wiredata.append(wiredata[-1])
-    #         else:
-    #             wiredata.append(None)
-    #         time += 1
-        
-    #     return Wire(
-    #         name=base_name + ('.' if len(base_name) else "") + vcd_data["name"],
-    #         width=vcd_data["type"]["width"],
-    #         data=wiredata
-    #     )
+    def times(self, length=0):
+        """Returns a list of times with high value on the wire."""
+        times = []
+        for time in range(len(self.data)):
+            value = self.data[time]
+            if type(value) is int and value > 0:
+                times.append(time)
+        # pad to desired length:
+        if (len(self.data) - 1) in times:
+            for time in range(len(self.data), length):
+                times.append(time)
+        return times
 
     def __invert__(self):
         data = []
@@ -343,59 +325,53 @@ class Wire:
 
 class WireGroup:
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
+        self.groups = []
         self.wires = []
 
     def add_wire(self, wire):
         self.wires.append(wire)
 
-    def add_wires(self, wiregroup):
-        for wire in wiregroup.wires:
-            self.add_wire(wire)
+    def add_group(self, group):
+        self.groups.append(group)
 
-    # @staticmethod
-    # def from_vcd(vcd_data, base_name=None):
-    #     name = "" if base_name == None else (base_name + ('.' if len(base_name) else "") + vcd_data["name"])
-    #     wiregroup = WireGroup(
-    #         name=vcd_data["name"] if len(name) == 0 else name
-    #     )
-    #     for child in vcd_data["children"]:
-    #         if "data" in child:
-    #             wiregroup.add_wire(
-    #                 Wire.from_vcd(child, name)
-    #             )
-    #         else:
-    #             wiregroup.add_wires(
-    #                 WireGroup.from_vcd(child, name)
-    #             )
-    #     return wiregroup
+    def num_wires(self):
+        """Returns total number of wires."""
+        return len(self.wires) + sum([group.num_wires() for group in self.groups])
+
+    def length(self):
+        """Returns the time duration of the longest wire."""
+        length = 0
+        for wire in self.wires:
+            length = max(length, wire.length())
+        for group in self.groups:
+            length = max(length, group.length())
+        return length
+
+    def find(self, name: str):
+        """Returns the first wire object with the given name, if it exists."""
+        for wire in self.wires:
+            if wire.name == name:
+                return wire
+        for group in self.groups:
+            return group.find(name)
+        raise SoottyError(f"Wire '{name}' does not exist.")
+
+    def get_names(self):
+        """Returns list of all wire names."""
+        names = set()
+        for wire in self.wires:
+            names.add(wire.name)
+        for group in self.groups:
+            names.update(group.get_names())
+        return names
 
 
 class WireTrace:
 
     def __init__(self):
-        self.wiregroups = []
-
-    def add_wiregroup(self, wiregroup):
-        self.wiregroups.append(wiregroup)
-
-    # @staticmethod
-    # def read_vcd(filename):
-    #     with open(filename) as vcd_file:
-    #         vcd = VcdParser()
-    #         vcd.parse(vcd_file)
-    #         return vcd.scope.toJson()  # dump json here for debugging
-        
-    # @staticmethod
-    # def from_vcd_file(filename):
-    #     vcd_data = WireTrace.read_vcd(filename)  # Read vcd data from file
-    #     wiretrace = WireTrace()
-    #     for child in vcd_data["children"]:
-    #         wiretrace.add_wiregroup(
-    #             WireGroup.from_vcd(child)
-    #         )
-    #     return wiretrace
+        self.root = WireGroup("__root__")
 
     @staticmethod
     def from_vcd(filename):
@@ -441,6 +417,7 @@ class WireTrace:
         this = WireTrace()
         this.metadata = dict()  # dictionary of vcd metadata
         wires = dict()  # map from id_code to wire object
+        stack = [this.root]  # store stack of current group for scoping
 
         with open(filename, 'rb') as stream:
             tokens = tokenize(stream)
@@ -452,16 +429,25 @@ class WireTrace:
                 elif token.kind is TokenKind.ENDDEFINITIONS:
                     break  # end of definitions
                 elif token.kind is TokenKind.SCOPE:
-                    pass  # implement scoping
+                    group = WireGroup(token.scope.ident)
+                    stack[-1].add_group(group)
+                    stack.append(group)
                 elif token.kind is TokenKind.TIMESCALE:
                     this.metadata['timescale'] = token.timescale
                 elif token.kind is TokenKind.UPSCOPE:
-                    pass  # implement scoping
+                    if len(stack) == 0:
+                        raise SoottyError(f'Illegal end of scope.')
+                    stack.pop()
                 elif token.kind is TokenKind.VAR:
-                    wires[token.var.id_code] = Wire(
-                        name=token.var.reference,
-                        width=token.var.size,
-                    )
+                    if token.var.id_code in wires:
+                        stack[-1].add_wire(wires[token.var.id_code])
+                    else:
+                        wire = Wire(
+                            name=token.var.reference,
+                            width=token.var.size,
+                        )
+                        wires[token.var.id_code] = wire
+                        stack[-1].add_wire(wire)
                 elif token.kind is TokenKind.VERSION:
                     this.metadata['version'] = token.version
                 else:
@@ -479,10 +465,8 @@ class WireTrace:
                     value = token.vector_change.value
                     wires[token.vector_change.id_code].data.append(value)  # TODO: fix to use time
                 elif token.kind is TokenKind.CHANGE_REAL:
-                    print(token.real_change)
                     raise SoottyInternalError(f'You forgot to implement token CHANGE_REAL.')
                 elif token.kind is TokenKind.CHANGE_STRING:
-                    print(token.string_change)
                     raise SoottyInternalError(f'You forgot to implement token CHANGE_STRING.')
                 elif token.kind is TokenKind.DUMPALL:
                     pass  # not sure what to do here
@@ -497,11 +481,6 @@ class WireTrace:
                 else:
                     raise SoottyError(f'Invalid vcd token when parsing: {token}')
 
-            group = WireGroup("")
-            for wire in wires:
-                group.add_wire(wires[wire])
-            this.add_wiregroup(group)
-
             return this
 
     @staticmethod
@@ -510,101 +489,94 @@ class WireTrace:
 
         :param SimulationTrace sim_trace: The object that stores the PyRTL tracer.
         """
-        wiretrace = WireTrace()
-        wiregroup = WireGroup('main')
+        trace = WireTrace()
         for wirename in sim_trace.trace:
-            wiregroup.add_wire(Wire(
+            trace.root.add_wire(Wire(
                 name = wirename,
                 width = sim_trace._wires[wirename].bitwidth,
-                data = sim_trace.trace[wirename]
-            ))
-        wiretrace.add_wiregroup(wiregroup)
-        return wiretrace
+                data = sim_trace.trace[wirename]))
+        return trace
 
-    # Returns the time of the last entry in data
+    def num_wires(self):
+        """Returns total number of wires."""
+        return self.root.num_wires()
+
     def length(self):
-        limit = 0
-        for wiregroup in self.wiregroups:
-            for wire in wiregroup.wires:
-                limit = max(limit, len(wire.data))
-        return limit
+        """Returns the time duration of the longest wire."""
+        return self.root.length()
 
-    # Gets a wire object based on the name
-    def find_wire(self, name):
-        for wiregroup in self.wiregroups:
-            for wire in wiregroup.wires:
-                if wire.name == name:
-                    return wire
-        raise SoottyInternalError(f"Wire '{name}' does not exist.")
+    def find(self, name: str):
+        """Returns the wire object with the given name, raises an error if not found."""
+        return self.root.find(name)
     
     def get_wire_names(self):
-        names = []
-        for wiregroup in self.wiregroups:
-            for wire in wiregroup.wires:
-                names.append(wire.name)
-        return names
+        """Returns list of all wire names."""
+        return self.root.get_names()
     
-    def compute_wire(self, expr):
+    def evaluate(self, expr: str):
+        wire = self._compute_wire(LimitExpression(expr).tree)
+        return wire.times(self.length())
+
+    def _compute_wire(self, expr):
+        """
+        Evaluate a limit expression
+        """
         if expr.data == "wire":
-            return self.find_wire(expr.children[0])
+            return self.find(expr.children[0])
         elif expr.data.type == "NOT":
-            return ~self.compute_wire(expr.children[0])
+            return ~self._compute_wire(expr.children[0])
         elif expr.data.type == "NEG":
-            return -self.compute_wire(expr.children[0])
+            return -self._compute_wire(expr.children[0])
         elif expr.data.type == "AND":
-            return self.compute_wire(expr.children[0]) & self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) & self._compute_wire(expr.children[1])
         elif expr.data.type == "OR":
-            return self.compute_wire(expr.children[0]) | self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) | self._compute_wire(expr.children[1])
         elif expr.data.type == "XOR":
-            return self.compute_wire(expr.children[0]) ^ self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) ^ self._compute_wire(expr.children[1])
         elif expr.data.type == "EQ":
-            return self.compute_wire(expr.children[0]) == self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) == self._compute_wire(expr.children[1])
         elif expr.data.type == "NEQ":
-            return self.compute_wire(expr.children[0]) != self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) != self._compute_wire(expr.children[1])
         elif expr.data.type == "GT":
-            return self.compute_wire(expr.children[0]) > self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) > self._compute_wire(expr.children[1])
         elif expr.data.type == "GEQ":
-            return self.compute_wire(expr.children[0]) >= self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) >= self._compute_wire(expr.children[1])
         elif expr.data.type == "LT":
-            return self.compute_wire(expr.children[0]) < self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) < self._compute_wire(expr.children[1])
         elif expr.data.type == "LEQ":
-            return self.compute_wire(expr.children[0]) <= self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) <= self._compute_wire(expr.children[1])
         elif expr.data.type == "SL":
-            return self.compute_wire(expr.children[0]) << self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) << self._compute_wire(expr.children[1])
         elif expr.data.type == "SR":
-            return self.compute_wire(expr.children[0]) >> self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) >> self._compute_wire(expr.children[1])
         elif expr.data.type == "ADD":
-            return self.compute_wire(expr.children[0]) + self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) + self._compute_wire(expr.children[1])
         elif expr.data.type == "SUB":
-            return self.compute_wire(expr.children[0]) - self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) - self._compute_wire(expr.children[1])
         elif expr.data.type == "MOD":
-            return self.compute_wire(expr.children[0]) % self.compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) % self._compute_wire(expr.children[1])
         elif expr.data.type == "FROM":
-            return self.compute_wire(expr.children[0])._from()
+            return self._compute_wire(expr.children[0])._from()
         elif expr.data.type == "AFTER":
-            return self.compute_wire(expr.children[0])._after()
+            return self._compute_wire(expr.children[0])._after()
         elif expr.data.type == "UNTIL":
-            return self.compute_wire(expr.children[0])._until()
+            return self._compute_wire(expr.children[0])._until()
         elif expr.data.type == "BEFORE":
-            return self.compute_wire(expr.children[0])._before()
+            return self._compute_wire(expr.children[0])._before()
         elif expr.data.type == "NEXT":
-            return self.compute_wire(expr.children[0])._next()
+            return self._compute_wire(expr.children[0])._next()
         elif expr.data.type == "PREV":
-            return self.compute_wire(expr.children[0])._prev()
+            return self._compute_wire(expr.children[0])._prev()
         elif expr.data.type == "ACC":
-            return self.compute_wire(expr.children[0])._acc()
+            return self._compute_wire(expr.children[0])._acc()
         elif expr.data.type == "CONST":
             return Wire(name=expr.data, width=0, data=[int(expr.children[0])])
         elif expr.data.type == "TIME":
             return Wire(name=f"t_{expr.data}", width=1, data=[0] * int(expr.children[0]) + [1, 0])
 
-    def compute_limits(self, start_expr, end_expr):
-        try:
-            start = self.compute_wire(LimitExpression(start_expr).tree).data.index(1)
-        except ValueError:
-            start = 0
-        try:
-            end = self.compute_wire(LimitExpression(end_expr).tree).data[start:].index(1) + start
-        except ValueError:
-            end = self.length()
+    def compute_limits(self, start_expr: str, end_expr: str):
+        starts = self.evaluate(start_expr)
+        start = starts[0] if len(starts) > 0 else 0
+        ends = list(filter(lambda time: time > start, self.evaluate(end_expr)))
+        end = ends[0] if len(ends) else self.length()
         return (start, end)

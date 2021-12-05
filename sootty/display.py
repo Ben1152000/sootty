@@ -12,5 +12,5 @@ class VectorImage:
         return self.source
     
     def display(self):
-        process = Popen("rsvg-convert -x 4 -y 4 | viu -", shell=True, stdin=PIPE, stdout=stdout)
+        process = Popen("rsvg-convert -z 4 | viu -", shell=True, stdin=PIPE, stdout=stdout)
         process.communicate(input=str.encode(self.source))

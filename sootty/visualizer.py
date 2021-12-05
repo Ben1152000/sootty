@@ -24,6 +24,7 @@ class Style:
         LINE_COLOR_Z = "#FFFF00"
         LINE_COLOR_X = "#FF0000"
         LINE_COLOR_DATA = "#3DB8B8"
+        BREAKPOINT_COLOR = "#FFFF00"
         TEXT_COLOR = "#FFFFFF"
         BKGD_COLOR = "#000000"
         #wires going from 0 and 1 are two different colors, x variable is red rectangle, z variable is yellow
@@ -51,6 +52,9 @@ class Style:
         #BKGD_COLOR = "#003000"
         BKGD_COLOR = "#2b5e2b"
 
+    class Debug(Default):
+        pass
+
 
 class Visualizer:
     """Converter for wiretrace objects to a svg vector image format."""
@@ -59,44 +63,77 @@ class Visualizer:
         """Optionally pass in a style class to control how the visualizer looks."""
         self.style = style
 
-    def to_svg(self, wiretrace, start=0, length=None, wires=set()):
+    def to_svg(self, wiretrace, start=0, length=None, wires=None, breakpoints=None):
         if length is None:
             length = wiretrace.length()
         """Converts the provided wiretrace object to a VectorImage object (svg)."""
-        return VectorImage(self._wiretrace_to_svg(wiretrace, start, length, wires))
+        return VectorImage(self._wiretrace_to_svg(wiretrace, start, length, wires, breakpoints))
 
-    def _wiretrace_to_svg(self, wiretrace, start, length, wires=None):
-        width = 2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + length * self.style.DATA_WIDTH
-        height = 2 * self.style.TOP_MARGIN + (len(wires) + 1) * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) - self.style.WIRE_MARGIN
-        if len(wires) == 0:
+    def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None):
+        if wires and len(wires) == 0:  # include all wires if empty list provided
             wires = None
-            height += sum([sum([1 for wire in wiregroup.wires]) for wiregroup in wiretrace.wiregroups]) * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)
-        
+        width = 2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + length * self.style.DATA_WIDTH
+        height = 2 * self.style.TOP_MARGIN - self.style.WIRE_MARGIN + (self.style.WIRE_HEIGHT + \
+            self.style.WIRE_MARGIN) * (1 + (len(wires) if wires else wiretrace.num_wires()))
+
         svg = f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">' \
               f'<rect x="0" y="0" width="{width}" height="{height}" fill="{self.style.BKGD_COLOR}" />'
         
-        lines = 1
         svg += self._timestamps_to_svg(
             left = self.style.LEFT_MARGIN + self.style.TEXT_WIDTH, 
             top = self.style.TOP_MARGIN,
             start = start,
             length = length)
+
+        if not breakpoints:
+            breakpoints = []
+        svg += self._breakpoints_to_svg(
+            breakpoints, 
+            left = self.style.LEFT_MARGIN + self.style.TEXT_WIDTH, 
+            top = self.style.TOP_MARGIN, 
+            start = start,
+            length = length,
+            height = height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN)
         
-        for wiregroup in wiretrace.wiregroups:
-            svg += self._wiregroup_to_svg(
-                wiregroup = wiregroup, 
-                left = self.style.LEFT_MARGIN,
-                top = self.style.TOP_MARGIN + self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN,
-                start = start,
-                length = length,
-                wires = wires)
+        svg += self._wiregroup_to_svg(
+            wiregroup = wiretrace.root,
+            left = self.style.LEFT_MARGIN,
+            top = self.style.TOP_MARGIN + self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN, 
+            start = start,
+            length = length,
+            wires = wires)[0]  # the first element is the svg data
+        
         svg += '</svg>'
         return svg
 
     def _timestamps_to_svg(self, left, top, start, length):
         svg = ''
         for index in range(start, start + length):
-            svg += f'<text x="{left + (index - start + 1/2) * self.style.DATA_WIDTH}" y="{top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2}" class="small" fill="{self.style.TEXT_COLOR}" text-anchor="middle">{index}</text>'
+            svg += self._shape_to_svg({
+                'name': 'text',
+                'x': left + (index - start + 1/2) * self.style.DATA_WIDTH,
+                'y': top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
+                'class': 'small',
+                'fill': self.style.TEXT_COLOR,
+                'text-anchor': 'middle',
+                'content': index,
+            })
+        return svg
+
+    def _breakpoints_to_svg(self, breakpoints, left, top, start, length, height):
+        """Convert a list of breakpoint times to highlights on the svg."""
+        svg = ''
+        for index in breakpoints:
+            if index >= start and index < start + length:
+                svg += self._shape_to_svg({
+                    'name': 'rect',
+                    'x': left + (index - start) * self.style.DATA_WIDTH + self.style.TRANS_START,
+                    'y': top,
+                    'width': self.style.DATA_WIDTH,
+                    'height': height,
+                    'fill': self.style.BREAKPOINT_COLOR,
+                    'fill-opacity': 0.4,
+                })
         return svg
 
     def _wiregroup_to_svg(self, wiregroup, left, top, start, length, wires=None):
@@ -104,19 +141,37 @@ class Visualizer:
         index = 0
         for wire in wiregroup.wires:
             if wires == None or wire.name in wires:
+                if wires:  # ensure only one copy of the wire is included
+                    wires.remove(wire.name)
                 svg += self._wire_to_svg(
                     wire,
                     left = left,
                     top = top + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
                     start = start,
                     length = length)
-                if wires:
-                    wires.remove(wire.name)
                 index += 1
-        return svg
+        # recursively call function on nested wiregroups
+        for group in wiregroup.groups:
+            result = self._wiregroup_to_svg(
+                group,
+                left = left,
+                top = top + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                start = start,
+                length = length,
+                wires = wires)
+            svg += result[0]
+            index += result[1]
+        return svg, index
 
     def _wire_to_svg(self, wire, left, top, start, length):
-        svg = f'<text x="{left}" y="{top + 15}" class="small" fill="{self.style.TEXT_COLOR}">{wire.name}</text>'
+        svg = self._shape_to_svg({
+            'name': 'text',
+            'x': left,
+            'y': top + 15,
+            'class': 'small',
+            'fill': self.style.TEXT_COLOR,
+            'content': wire.name,
+        })
         for index in range(start, start + length):
             prev = (wire.data[index - 1] if index > 0 else wire.data[index]) if index < len(wire.data) else wire.data[-1]
             value = wire.data[index] if index < len(wire.data) else wire.data[-1]
@@ -701,12 +756,16 @@ class Visualizer:
         
         svg_data = ''
         for shape in shapes:
-            start_tag = '<' + str(shape['name'])
-            end_tag = ' />'
-            for prop in shape:
-                if prop == 'content':
-                    end_tag = '>' + str(shape['content']) + '</' + str(shape['name']) + '>'
-                elif prop != 'name':
-                    start_tag += ' ' + prop + '="' + str(shape[prop]) + '"'
-            svg_data += start_tag + end_tag
+            svg_data += self._shape_to_svg(shape)
         return svg_data
+
+    def _shape_to_svg(self, shape):
+        """Convert a shape dictionary object to an svg string."""
+        start_tag = '<' + str(shape['name'])
+        end_tag = ' />'
+        for prop in shape:
+            if prop == 'content':
+                end_tag = '>' + str(shape['content']) + '</' + str(shape['name']) + '>'
+            elif prop != 'name':
+                start_tag += ' ' + prop + '="' + str(shape[prop]) + '"'
+        return start_tag + end_tag
