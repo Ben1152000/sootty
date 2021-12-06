@@ -482,35 +482,37 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + self.style.TRANS_START,
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
-                'stroke': self.style.LINE_COLOR_X,
+                'stroke': self.style.LINE_COLOR_LOW,
             })
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.DATA_WIDTH,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
         elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.X:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
-                'stroke': self.style.LINE_COLOR_X,
-            })
-            shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + self.style.TRANS_START,
                 'y1': top,
                 'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
+            shapes.append({
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.DATA_WIDTH,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
         elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.X:
             shapes.append({
@@ -522,55 +524,59 @@ class Visualizer:
                 'stroke': self.style.LINE_COLOR_X,
             })
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.DATA_WIDTH,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
         elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.LOW:
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.TRANS_START,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_X,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
             })
         elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.HIGH:
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.TRANS_START,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START,
                 'x2': left + self.style.DATA_WIDTH,
                 'y1': top,
                 'y2': top,
-                'stroke': self.style.LINE_COLOR_X,
+                'stroke': self.style.LINE_COLOR_HIGH,
             })
         elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.DATA:
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.DATA_WIDTH,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
             shapes.append({
                 'name': 'line',
@@ -582,54 +588,63 @@ class Visualizer:
             })
         elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.X:
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.DATA_WIDTH,
+                'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
-            })
-            shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
         # TODO: figure out how to display Z values in svg:
         elif prev_type is Visualizer.ValueType.LOW and value_type is Visualizer.ValueType.Z:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + self.style.TRANS_START,
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
         elif prev_type is Visualizer.ValueType.HIGH and value_type is Visualizer.ValueType.Z:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'x2': left + self.style.TRANS_START,
+                'y1': top,
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'y1': top,
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
         elif prev_type is Visualizer.ValueType.DATA and value_type is Visualizer.ValueType.Z:
@@ -645,110 +660,103 @@ class Visualizer:
                 'name': 'line',
                 'x1': left,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_X,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
+                'stroke': self.style.LINE_COLOR_Z,
             })
         elif prev_type is Visualizer.ValueType.X and value_type is Visualizer.ValueType.Z:
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
-                'stroke': self.style.LINE_COLOR_Z,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.TRANS_START,
+                'height': self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
         elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.LOW:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'x2': left + self.style.TRANS_START,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_Z,
+                'y1': top + self.style.WIRE_HEIGHT,
+                'y2': top + self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_LOW,
             })
         elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.HIGH:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'x2': left + self.style.TRANS_START,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
             shapes.append({
                 'name': 'line',
-                'x1': left,
+                'x1': left + self.style.TRANS_START,
+                'x2': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': top,
+                'stroke': self.style.LINE_COLOR_HIGH,
+            })
+            shapes.append({
+                'name': 'line',
+                'x1': left + self.style.TRANS_START,
                 'x2': left + self.style.DATA_WIDTH,
                 'y1': top,
                 'y2': top,
-                'stroke': self.style.LINE_COLOR_Z,
-            })
-        elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.DATA:
-            shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
-                'stroke': self.style.LINE_COLOR_Z,
-            })
-            shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_Z,
+                'stroke': self.style.LINE_COLOR_HIGH,
             })
         elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.X:
             shapes.append({
                 'name': 'line',
                 'x1': left,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
             shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
-                'stroke': self.style.LINE_COLOR_Z,
+                'name': 'rect',
+                'x': left,
+                'y': top,
+                'width': self.style.DATA_WIDTH,
+                'height': self.style.WIRE_HEIGHT,
+                'stroke': self.style.LINE_COLOR_X,
+                'fill': self.style.LINE_COLOR_X,
             })
         elif prev_type is Visualizer.ValueType.Z and value_type is Visualizer.ValueType.Z:
             shapes.append({
                 'name': 'line',
                 'x1': left,
                 'x2': left + self.style.DATA_WIDTH,
-                'y1': top + self.style.WIRE_HEIGHT,
-                'y2': top + self.style.WIRE_HEIGHT,
-                'stroke': self.style.LINE_COLOR_Z,
-            })
-            shapes.append({
-                'name': 'line',
-                'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
-                'y1': top,
-                'y2': top,
+                'y1': (top + (self.style.WIRE_HEIGHT)/2),
+                'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
             })
         else:
