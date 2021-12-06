@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 
 setuptools.setup( 
     name='sootty',
-    version='0.2.1',
+    version='0.2.2',
     description='Displays vcd files to the command line.', 
     long_description=README,
     packages=setuptools.find_packages(exclude=("tests",)), 
