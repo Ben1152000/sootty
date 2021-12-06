@@ -173,8 +173,8 @@ class Visualizer:
             'content': wire.name,
         })
         for index in range(start, start + length):
-            prev = (wire.data[index - 1] if index > 0 else wire.data[index]) if index < len(wire.data) else wire.data[-1]
-            value = wire.data[index] if index < len(wire.data) else wire.data[-1]
+            prev = (wire[index - 1] if index > 0 else wire[index]) if index < wire.length() else wire.end()
+            value = wire[index] if index < wire.length() else wire.end()
             svg += self._value_to_svg(
                 prev = prev,
                 value = value,

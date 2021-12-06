@@ -2,13 +2,14 @@ import sys
 from vcd.reader import *
 from itertools import islice
 from sortedcontainers import SortedDict, SortedList, SortedSet
+
 from ..exceptions import *
 
 
 class ValueChange(SortedDict):
     
-    def __init__(self, width=1):
-        super().__init__(self)
+    def __init__(self, width=1, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
         self.width = width
 
     def get(self, key):

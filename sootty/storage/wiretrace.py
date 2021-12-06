@@ -98,10 +98,10 @@ class WireTrace:
                 elif token.kind is TokenKind.CHANGE_SCALAR:
                     value = token.scalar_change.value
                     value = int(value) if value in ('0', '1') else value
-                    wires[token.scalar_change.id_code].data.append(value)  # TODO: fix to use time
+                    wires[token.scalar_change.id_code][time] = value
                 elif token.kind is TokenKind.CHANGE_VECTOR:
                     value = token.vector_change.value
-                    wires[token.vector_change.id_code].data.append(value)  # TODO: fix to use time
+                    wires[token.vector_change.id_code][time] = value
                 elif token.kind is TokenKind.CHANGE_REAL:
                     raise SoottyInternalError(f'You forgot to implement token CHANGE_REAL.')
                 elif token.kind is TokenKind.CHANGE_STRING:
@@ -129,7 +129,8 @@ class WireTrace:
         """
         trace = WireTrace()
         for wirename in sim_trace.trace:
-            trace.root.add_wire(Wire(
+            print(sim_trace.trace[wirename], file=sys.stderr)
+            trace.root.add_wire(Wire.from_data(
                 name = wirename,
                 width = sim_trace._wires[wirename].bitwidth,
                 data = sim_trace.trace[wirename]))
