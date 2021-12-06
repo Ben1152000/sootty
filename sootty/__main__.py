@@ -1,6 +1,6 @@
 import sys, argparse
 
-from .wiretrace import WireTrace
+from .storage import WireTrace
 from .visualizer import Visualizer
 
 def main():
@@ -56,14 +56,14 @@ def main():
     if args.breakpoints is not None:
         breakpoints = wiretrace.evaluate(args.breakpoints)
 
-    wires = set()
+    wires = None
     if args.wires:
         wires = set(args.wires.split(','))
     
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints)
 
-    if len(wires):
+    if wires is not None and len(wires):
         raise Exception(f'Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}')
     
     if args.display:

@@ -30,8 +30,6 @@ setuptools.setup(
     install_requires=[
         'lark>=1',
         'pyvcd>=0.3',
-    ],
-    dependency_links=[
-        'https://github.com/Nic30/pyDigitalWaveTools.git'
+        'sortedcontainers>=2.4'
     ],
 )
