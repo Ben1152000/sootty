@@ -2,7 +2,7 @@ import sys
 from vcd.reader import *
 from itertools import islice
 from sortedcontainers import SortedDict, SortedList, SortedSet
-# from ..exceptions import *
+from ..exceptions import *
 
 
 class ValueChange(SortedDict):
@@ -22,14 +22,14 @@ class ValueChange(SortedDict):
         """Returns the time duration of the wire."""
         return next(self.irange(reverse=True))
 
-    def search(self, value, start=None, end=None):
-        """Returns a list of times with a specified value on the wire, between start and end times."""
+    def search(self, function=lambda value: type(value) is int and value > 0, start=None, end=None):
+        """Returns a list of times that satisfy the function, between start and end times."""
         indices = []
         prev = None
         for i in self.irange(minimum=start, maximum=end):
             if prev is not None:
                 indices.extend(range(prev + 1, i))
-            if self[i] == value:
+            if function(self[i]):
                 indices.append(i)
                 prev = i
             else:
