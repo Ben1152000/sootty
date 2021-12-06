@@ -58,7 +58,7 @@ def main():
 
     wires = None
     if args.wires:
-        wires = set(args.wires.split(','))
+        wires = set([name.strip() for name in args.wires.split(',')])
     
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints)

@@ -21,7 +21,7 @@ class ValueChange(SortedDict):
 
     def length(self):
         """Returns the time duration of the wire."""
-        return next(self.irange(reverse=True))
+        return next(self.irange(reverse=True)) if len(self) > 0 else 0
 
     def search(self, function=lambda value: type(value) is int and value > 0, start=None, end=None):
         """Returns a list of times that satisfy the function, between start and end times."""

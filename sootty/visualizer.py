@@ -11,8 +11,10 @@ class Style:
     class Default():
         TOP_MARGIN = 15
         LEFT_MARGIN = 15
-        TEXT_WIDTH = 100
-        DATA_WIDTH = 50
+        CHAR_WIDTH = 7
+        LABEL_WIDTH = 12
+        TEXT_WIDTH = CHAR_WIDTH * LABEL_WIDTH
+        FULL_WIDTH = 800
         WIRE_HEIGHT = 20
         WIRE_MARGIN = 10
         TRANS_START = 5
@@ -72,7 +74,7 @@ class Visualizer:
     def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None):
         if wires and len(wires) == 0:  # include all wires if empty list provided
             wires = None
-        width = 2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + length * self.style.DATA_WIDTH
+        width = 2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
         height = 2 * self.style.TOP_MARGIN - self.style.WIRE_MARGIN + (self.style.WIRE_HEIGHT + \
             self.style.WIRE_MARGIN) * (1 + (len(wires) if wires else wiretrace.num_wires()))
 
@@ -108,14 +110,15 @@ class Visualizer:
 
     def _timestamps_to_svg(self, left, top, start, length):
         svg = ''
-        for index in range(start, start + length):
+        for index in range(start, start + length, ((length - 1) // 32) + 1):
             svg += self._shape_to_svg({
                 'name': 'text',
-                'x': left + (index - start + 1/2) * self.style.DATA_WIDTH,
+                'x': left + (index - start + 1/2) * (self.style.FULL_WIDTH / length),
                 'y': top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
                 'class': 'small',
                 'fill': self.style.TEXT_COLOR,
                 'text-anchor': 'middle',
+                'font-family': 'monospace',
                 'content': index,
             })
         return svg
@@ -127,9 +130,9 @@ class Visualizer:
             if index >= start and index < start + length:
                 svg += self._shape_to_svg({
                     'name': 'rect',
-                    'x': left + (index - start) * self.style.DATA_WIDTH + self.style.TRANS_START,
+                    'x': left + (index - start) * (self.style.FULL_WIDTH / length) + self.style.TRANS_START,
                     'y': top,
-                    'width': self.style.DATA_WIDTH,
+                    'width': (self.style.FULL_WIDTH / length),
                     'height': height,
                     'fill': self.style.BREAKPOINT_COLOR,
                     'fill-opacity': 0.4,
@@ -170,17 +173,17 @@ class Visualizer:
             'y': top + 15,
             'class': 'small',
             'fill': self.style.TEXT_COLOR,
-            'content': wire.name,
+            'font-family': 'monospace',
+            'content': wire.name if len(wire.name) <= 10 else wire.name[:7] + '...',
         })
         for index in range(start, start + length):
-            prev = (wire[index - 1] if index > 0 else wire[index]) if index < wire.length() else wire.end()
-            value = wire[index] if index < wire.length() else wire.end()
             svg += self._value_to_svg(
-                prev = prev,
-                value = value,
-                width = wire.width,
-                left = left + ((index - start) * self.style.DATA_WIDTH) + self.style.TEXT_WIDTH,
+                prev = wire[index - 1] if index > 0 else wire[index],
+                value = wire[index],
+                width = wire.width(),
+                left = left + ((index - start) * (self.style.FULL_WIDTH / length)) + self.style.TEXT_WIDTH,
                 top = top,
+                length = length,
                 initial = (index == start))
         return svg
 
@@ -202,6 +205,8 @@ class Visualizer:
                 return Visualizer.ValueType.X
             elif value in ('z', 'Z'):
                 return Visualizer.ValueType.Z
+            elif value is None:
+                return Visualizer.ValueType.X
             else:
                 raise SoottyInternalError(f'Invalid wire value, unable to visualize: {value}')
         else:
@@ -210,7 +215,7 @@ class Visualizer:
             else:
                 return Visualizer.ValueType.DATA
 
-    def _value_to_svg(self, prev, value, width, left, top, initial=False):
+    def _value_to_svg(self, prev, value, width, left, top, length, initial=False):
         # deduce types from wire width and value:
         prev_type = Visualizer.type_from_value(prev, width)
         value_type = Visualizer.type_from_value(value, width)
@@ -223,7 +228,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
@@ -248,7 +253,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
@@ -273,7 +278,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
@@ -282,7 +287,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
@@ -291,7 +296,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -307,7 +312,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -316,7 +321,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -332,7 +337,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -365,7 +370,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
@@ -398,7 +403,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
@@ -407,7 +412,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -415,7 +420,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -440,7 +445,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -464,7 +469,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_DATA,
@@ -475,6 +480,7 @@ class Visualizer:
                 'y': top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
                 'class': 'small',
                 'fill': self.style.TEXT_COLOR,
+                'font-family': 'monospace',
                 'content': value
             })
         # TODO: figure out how to display X values in svg:
@@ -491,7 +497,7 @@ class Visualizer:
                 'name': 'rect',
                 'x': left,
                 'y': top,
-                'width': self.style.DATA_WIDTH,
+                'width': (self.style.FULL_WIDTH / length),
                 'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
                 'fill': self.style.LINE_COLOR_X,
@@ -509,7 +515,7 @@ class Visualizer:
                 'name': 'rect',
                 'x': left,
                 'y': top,
-                'width': self.style.DATA_WIDTH,
+                'width': (self.style.FULL_WIDTH / length),
                 'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
                 'fill': self.style.LINE_COLOR_X,
@@ -518,7 +524,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
@@ -527,7 +533,7 @@ class Visualizer:
                 'name': 'rect',
                 'x': left,
                 'y': top,
-                'width': self.style.DATA_WIDTH,
+                'width': (self.style.FULL_WIDTH / length),
                 'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
                 'fill': self.style.LINE_COLOR_X,
@@ -545,7 +551,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
@@ -563,7 +569,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
@@ -573,7 +579,7 @@ class Visualizer:
                 'name': 'rect',
                 'x': left,
                 'y': top,
-                'width': self.style.DATA_WIDTH,
+                'width': (self.style.FULL_WIDTH / length),
                 'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
                 'fill': self.style.LINE_COLOR_X,
@@ -581,7 +587,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_X,
@@ -591,7 +597,7 @@ class Visualizer:
                 'name': 'rect',
                 'x': left,
                 'y': top,
-                'width': self.style.DATA_WIDTH,
+                'width': (self.style.FULL_WIDTH / length),
                 'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
                 'fill': self.style.LINE_COLOR_X,
@@ -617,7 +623,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': (top + (self.style.WIRE_HEIGHT)/2),
                 'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
@@ -642,7 +648,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': (top + (self.style.WIRE_HEIGHT)/2),
                 'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
@@ -651,7 +657,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
@@ -659,7 +665,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': (top + (self.style.WIRE_HEIGHT)/2),
                 'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
@@ -677,7 +683,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': (top + (self.style.WIRE_HEIGHT)/2),
                 'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
@@ -702,7 +708,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START + self.style.TRANS_WIDTH * self.style.BLOCK_TRANS,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top + self.style.WIRE_HEIGHT,
                 'y2': top + self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_LOW,
@@ -727,7 +733,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left + self.style.TRANS_START,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': top,
                 'y2': top,
                 'stroke': self.style.LINE_COLOR_HIGH,
@@ -736,7 +742,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': (top + (self.style.WIRE_HEIGHT)/2),
                 'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,
@@ -745,7 +751,7 @@ class Visualizer:
                 'name': 'rect',
                 'x': left,
                 'y': top,
-                'width': self.style.DATA_WIDTH,
+                'width': (self.style.FULL_WIDTH / length),
                 'height': self.style.WIRE_HEIGHT,
                 'stroke': self.style.LINE_COLOR_X,
                 'fill': self.style.LINE_COLOR_X,
@@ -754,7 +760,7 @@ class Visualizer:
             shapes.append({
                 'name': 'line',
                 'x1': left,
-                'x2': left + self.style.DATA_WIDTH,
+                'x2': left + (self.style.FULL_WIDTH / length),
                 'y1': (top + (self.style.WIRE_HEIGHT)/2),
                 'y2': (top + (self.style.WIRE_HEIGHT)/2),
                 'stroke': self.style.LINE_COLOR_Z,

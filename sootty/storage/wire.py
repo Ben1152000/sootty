@@ -8,7 +8,7 @@ class Wire:
 
     def __init__(self, name, width=1):
         self.name = name
-        self._data = ValueChange(self.width)
+        self._data = ValueChange(width)
     
     @staticmethod
     def from_data(name, data, width=1):
