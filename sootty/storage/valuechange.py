@@ -172,23 +172,3 @@ class ValueChange(SortedDict):
             elif not self[key] and state:
                 state = False
         return data
-    
-if __name__ == "__main__":
-    vc = ValueChange(width=2)
-    vc[0] = 2
-    vc[1] = 2
-    vc[2] = 3
-    vc[9] = 1
-    vc[12] = 3
-    print(vc)
-    # print(vc.get(0))
-    # print(vc.search(True, end = 20))
-    vc2 = ValueChange(width=2)
-    vc2[0] = 1
-    vc2[1] = 0
-    vc2[6] = 1
-    vc2[9] = 0
-    vc2[10] = 1
-    print(vc2)
-    print(vc & vc2)
-    print(vc2._before())
