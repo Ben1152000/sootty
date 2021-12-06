@@ -5,4 +5,4 @@ from .exceptions import SoottyInternalError
 
 from .visualizer import Visualizer, Style
 
-from .wiretrace import Wire, WireGroup, WireTrace
+from .storage import Wire, WireGroup, WireTrace

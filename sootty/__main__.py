@@ -1,6 +1,6 @@
 import sys, argparse
 
-from .wiretrace import WireTrace
+from .storage import WireTrace
 from .visualizer import Visualizer
 
 def main():
