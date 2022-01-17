@@ -10,11 +10,12 @@ def test_svg_output():
 
     image = Visualizer().to_svg(wiretrace, start=0, length=8)
 
-    pattern = r'(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b'
+    pattern = r"(?:<\?xml\b[^>]*>[^<]*)?(?:<!--.*?-->[^<]*)*(?:<svg|<!DOCTYPE svg)\b"
     prog = re.compile(pattern, re.DOTALL)
     assert prog.match(image.source) is not None
 
     image.display()
+
 
 def test_scope():
     wiretrace = WireTrace().from_vcd("example/example2.vcd")
@@ -27,7 +28,7 @@ def test_scope():
     #     for group in group.groups:
     #         print('\t' * depth + group.name + ':')
     #         print_group(group, depth + 1)
-    
+
     # print_group(wiretrace.root)
 
     assert wiretrace.num_wires() == 26
@@ -36,7 +37,8 @@ def test_scope():
 
     image.display()
 
+
 if __name__ == "__main__":
     test_svg_output()
     test_scope()
-    print('Success!')
+    print("Success!")

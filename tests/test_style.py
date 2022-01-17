@@ -14,4 +14,4 @@ def test_style_class():
 
 if __name__ == "__main__":
     test_style_class()
-    print('Success!')
+    print("Success!")

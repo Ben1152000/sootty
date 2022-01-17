@@ -9,4 +9,4 @@ def test_data_types():
 
 if __name__ == "__main__":
     test_data_types()
-    print('Success!')
+    print("Success!")
