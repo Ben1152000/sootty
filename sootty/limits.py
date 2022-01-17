@@ -7,6 +7,7 @@ except ImportError:
 
 # Read and interpret grammar file.
 from . import static
+
 parser = Lark(pkg_resources.open_text(static, "grammar.lark").read())
 
 
@@ -26,7 +27,7 @@ class Prune(Visitor):
 
     def start(self, tree):
         self.binexp(tree)
-    
+
     def lexp(self, tree):
         self.binexp(tree)
 

@@ -6,23 +6,23 @@ from ..limits import LimitExpression
 from .wiregroup import WireGroup
 from .wire import Wire
 
-class WireTrace:
 
+class WireTrace:
     def __init__(self):
         self.root = WireGroup("__root__")
 
-    @staticmethod
-    def from_vcd(filename):
+    @classmethod
+    def from_vcd(cls, filename):
         """
         Construct a WireTrace object from a parsed vcd file, using the pyvcd library.
 
         Syntax of four-state VCD file (IEEE 1364-2005 §18.2.1):
 
-        value_change_dump_definitions ::= 
+        value_change_dump_definitions ::=
             { declaration_command }{ simulation_command }
-        declaration_command ::= 
-            declaration_keyword 
-            [ command_text ] 
+        declaration_command ::=
+            declaration_keyword
+            [ command_text ]
             $end
         simulation_command ::=
             simulation_keyword { value_change } $end
@@ -52,18 +52,18 @@ class WireTrace:
             { ASCII character }
         """
 
-        this = WireTrace()
+        this = cls()
         this.metadata = dict()  # dictionary of vcd metadata
         wires = dict()  # map from id_code to wire object
         stack = [this.root]  # store stack of current group for scoping
 
-        with open(filename, 'rb') as stream:
+        with open(filename, "rb") as stream:
             tokens = tokenize(stream)
             for token in tokens:
                 if token.kind is TokenKind.COMMENT:
-                    this.metadata['comment'] = token.comment
+                    this.metadata["comment"] = token.comment
                 elif token.kind is TokenKind.DATE:
-                    this.metadata['date'] = token.date
+                    this.metadata["date"] = token.date
                 elif token.kind is TokenKind.ENDDEFINITIONS:
                     break  # end of definitions
                 elif token.kind is TokenKind.SCOPE:
@@ -71,10 +71,10 @@ class WireTrace:
                     stack[-1].add_group(group)
                     stack.append(group)
                 elif token.kind is TokenKind.TIMESCALE:
-                    this.metadata['timescale'] = token.timescale
+                    this.metadata["timescale"] = token.timescale
                 elif token.kind is TokenKind.UPSCOPE:
                     if len(stack) == 0:
-                        raise SoottyError(f'Illegal end of scope.')
+                        raise SoottyError(f"Illegal end of scope.")
                     stack.pop()
                 elif token.kind is TokenKind.VAR:
                     if token.var.id_code in wires:
@@ -87,25 +87,29 @@ class WireTrace:
                         wires[token.var.id_code] = wire
                         stack[-1].add_wire(wire)
                 elif token.kind is TokenKind.VERSION:
-                    this.metadata['version'] = token.version
+                    this.metadata["version"] = token.version
                 else:
-                    raise SoottyError(f'Invalid vcd token when parsing: {token}')
-        
+                    raise SoottyError(f"Invalid vcd token when parsing: {token}")
+
             time = None
             for token in tokens:
                 if token.kind is TokenKind.CHANGE_TIME:
                     time = token.time_change
                 elif token.kind is TokenKind.CHANGE_SCALAR:
                     value = token.scalar_change.value
-                    value = int(value) if value in ('0', '1') else value
+                    value = int(value) if value in ("0", "1") else value
                     wires[token.scalar_change.id_code][time] = value
                 elif token.kind is TokenKind.CHANGE_VECTOR:
                     value = token.vector_change.value
                     wires[token.vector_change.id_code][time] = value
                 elif token.kind is TokenKind.CHANGE_REAL:
-                    raise SoottyInternalError(f'You forgot to implement token CHANGE_REAL.')
+                    raise SoottyInternalError(
+                        f"You forgot to implement token CHANGE_REAL."
+                    )
                 elif token.kind is TokenKind.CHANGE_STRING:
-                    raise SoottyInternalError(f'You forgot to implement token CHANGE_STRING.')
+                    raise SoottyInternalError(
+                        f"You forgot to implement token CHANGE_STRING."
+                    )
                 elif token.kind is TokenKind.DUMPALL:
                     pass  # not sure what to do here
                 elif token.kind is TokenKind.DUMPOFF:
@@ -117,23 +121,26 @@ class WireTrace:
                 elif token.kind is TokenKind.END:
                     pass  # not sure what to do here
                 else:
-                    raise SoottyError(f'Invalid vcd token when parsing: {token}')
+                    raise SoottyError(f"Invalid vcd token when parsing: {token}")
 
             return this
 
-    @staticmethod
-    def from_pyrtl(sim_trace):
+    @classmethod
+    def from_pyrtl(cls, sim_trace):
         """Parses a WireTrace object from a PyRTL SimulationTrace object.
 
         :param SimulationTrace sim_trace: The object that stores the PyRTL tracer.
         """
-        trace = WireTrace()
+        trace = cls()
         for wirename in sim_trace.trace:
             print(sim_trace.trace[wirename], file=sys.stderr)
-            trace.root.add_wire(Wire.from_data(
-                name = wirename,
-                width = sim_trace._wires[wirename].bitwidth,
-                data = sim_trace.trace[wirename]))
+            trace.root.add_wire(
+                Wire.from_data(
+                    name=wirename,
+                    width=sim_trace._wires[wirename].bitwidth,
+                    data=sim_trace.trace[wirename],
+                )
+            )
         return trace
 
     def num_wires(self):
@@ -147,11 +154,11 @@ class WireTrace:
     def find(self, name: str):
         """Returns the wire object with the given name, raises an error if not found."""
         return self.root.find(name)
-    
+
     def get_wire_names(self):
         """Returns list of all wire names."""
         return self.root.get_names()
-    
+
     def evaluate(self, expr: str):
         wire = self._compute_wire(LimitExpression(expr).tree)
         return wire.times(self.length())
@@ -167,33 +174,61 @@ class WireTrace:
         elif expr.data.type == "NEG":
             return -self._compute_wire(expr.children[0])
         elif expr.data.type == "AND":
-            return self._compute_wire(expr.children[0]) & self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) & self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "OR":
-            return self._compute_wire(expr.children[0]) | self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) | self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "XOR":
-            return self._compute_wire(expr.children[0]) ^ self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) ^ self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "EQ":
-            return self._compute_wire(expr.children[0]) == self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) == self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "NEQ":
-            return self._compute_wire(expr.children[0]) != self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) != self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "GT":
-            return self._compute_wire(expr.children[0]) > self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) > self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "GEQ":
-            return self._compute_wire(expr.children[0]) >= self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) >= self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "LT":
-            return self._compute_wire(expr.children[0]) < self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) < self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "LEQ":
-            return self._compute_wire(expr.children[0]) <= self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) <= self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "SL":
-            return self._compute_wire(expr.children[0]) << self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) << self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "SR":
-            return self._compute_wire(expr.children[0]) >> self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) >> self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "ADD":
-            return self._compute_wire(expr.children[0]) + self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) + self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "SUB":
-            return self._compute_wire(expr.children[0]) - self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) - self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "MOD":
-            return self._compute_wire(expr.children[0]) % self._compute_wire(expr.children[1])
+            return self._compute_wire(expr.children[0]) % self._compute_wire(
+                expr.children[1]
+            )
         elif expr.data.type == "FROM":
             return self._compute_wire(expr.children[0])._from()
         elif expr.data.type == "AFTER":
@@ -209,9 +244,9 @@ class WireTrace:
         elif expr.data.type == "ACC":
             return self._compute_wire(expr.children[0])._acc()
         elif expr.data.type == "CONST":
-            return Wire(name=expr.data, width=0, data=[int(expr.children[0])])
+            return Wire.const(int(expr.children[0]))
         elif expr.data.type == "TIME":
-            return Wire(name=f"t_{expr.data}", width=1, data=[0] * int(expr.children[0]) + [1, 0])
+            return Wire.time(int(expr.children[0]))
 
     def compute_limits(self, start_expr: str, end_expr: str):
         starts = self.evaluate(start_expr)
