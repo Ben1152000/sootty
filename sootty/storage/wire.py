@@ -4,16 +4,19 @@ from itertools import compress, chain
 from ..exceptions import *
 from .valuechange import ValueChange
 
-class Wire:
 
+class Wire:
     def __init__(self, name, width=1):
         self.name = name
         self._data = ValueChange(width)
-    
-    @staticmethod
-    def from_data(name, data, width=1):
-        wire = Wire(name=name, width=width)
-        for key in compress(range(len(data)), map(lambda pair: pair[0] != pair[1], zip(chain([None], data), data))):
+
+    @classmethod
+    def from_data(cls, name, data, width=1):
+        wire = cls(name=name, width=width)
+        for key in compress(
+            range(len(data)),
+            map(lambda pair: pair[0] != pair[1], zip(chain([None], data), data)),
+        ):
             wire[key] = data[key]
         return wire
 
@@ -41,6 +44,20 @@ class Wire:
         """Returns a list of times with high value on the wire."""
         return self._data.search(end=max(length, self.length()))
 
+    @classmethod
+    def const(cls, value):
+        wire = cls(name=f"c_{value}", width=0)
+        wire[0] = value
+        return wire
+
+    @classmethod
+    def time(cls, value):
+        wire = cls(name=f"t_{value}", width=1)
+        wire[0] = 0
+        wire[value] = 1
+        wire[value + 1] = 0
+        return wire
+
     def __invert__(self):
         wire = Wire(name="~" + self.name)
         wire._data = self._data.__invert__()
@@ -50,77 +67,77 @@ class Wire:
         wire = Wire(name="-" + self.name)
         wire._data = self._data.__invert__()
         return wire
-    
+
     def __and__(self, other):
         wire = Wire(name="(" + self.name + " & " + other.name + ")")
-        wire._data = self._data.__and__(other)
+        wire._data = self._data.__and__(other._data)
         return wire
 
     def __or__(self, other):
         wire = Wire(name="(" + self.name + " | " + other.name + ")")
-        wire._data = self._data.__or__(other)
+        wire._data = self._data.__or__(other._data)
         return wire
 
     def __xor__(self, other):
         wire = Wire(name="(" + self.name + " ^ " + other.name + ")")
-        wire._data = self._data.__xor__(other)
+        wire._data = self._data.__xor__(other._data)
         return wire
 
     def __eq__(self, other):
         wire = Wire(name="(" + self.name + " == " + other.name + ")")
-        wire._data = self._data.__eq__(other)
+        wire._data = self._data.__eq__(other._data)
         return wire
 
     def __ne__(self, other):
         wire = Wire(name="(" + self.name + " != " + other.name + ")")
-        wire._data = self._data.__ne__(other)
+        wire._data = self._data.__ne__(other._data)
         return wire
 
     def __gt__(self, other):
         wire = Wire(name="(" + self.name + " > " + other.name + ")")
-        wire._data = self._data.__gt__(other)
+        wire._data = self._data.__gt__(other._data)
         return wire
 
     def __ge__(self, other):
         wire = Wire(name="(" + self.name + " >= " + other.name + ")")
-        wire._data = self._data.__ge__(other)
+        wire._data = self._data.__ge__(other._data)
         return wire
 
     def __lt__(self, other):
         wire = Wire(name="(" + self.name + " < " + other.name + ")")
-        wire._data = self._data.__lt__(other)
+        wire._data = self._data.__lt__(other._data)
         return wire
 
     def __le__(self, other):
         wire = Wire(name="(" + self.name + " <= " + other.name + ")")
-        wire._data = self._data.__le__(other)
+        wire._data = self._data.__le__(other._data)
         return wire
 
     def __lshift__(self, other):
         wire = Wire(name="(" + self.name + " << " + other.name + ")")
-        wire._data = self._data.__lshift__(other)
+        wire._data = self._data.__lshift__(other._data)
         return wire
 
     def __rshift__(self, other):
         wire = Wire(name="(" + self.name + " >> " + other.name + ")")
-        wire._data = self._data.__rshift__(other)
+        wire._data = self._data.__rshift__(other._data)
         return wire
 
     def __add__(self, other):
         wire = Wire(name="(" + self.name + " + " + other.name + ")")
-        wire._data = self._data.__add__(other)
+        wire._data = self._data.__add__(other._data)
         return wire
-  
+
     def __sub__(self, other):
         wire = Wire(name="(" + self.name + " - " + other.name + ")")
-        wire._data = self._data.__sub__(other)
+        wire._data = self._data.__sub__(other._data)
         return wire
-  
+
     def __mod__(self, other):
         wire = Wire(name="(" + self.name + " % " + other.name + ")")
-        wire._data = self._data.__mod__(other)
+        wire._data = self._data.__mod__(other._data)
         return wire
-  
+
     def _from(self):
         wire = Wire(name="from " + self.name)
         wire._data = self._data._from()

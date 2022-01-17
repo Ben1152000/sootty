@@ -7,7 +7,6 @@ from ..exceptions import *
 
 
 class ValueChange(SortedDict):
-    
     def __init__(self, width=1, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
         self.width = width
@@ -23,7 +22,12 @@ class ValueChange(SortedDict):
         """Returns the time duration of the wire."""
         return next(self.irange(reverse=True)) if len(self) > 0 else 0
 
-    def search(self, function=lambda value: type(value) is int and value > 0, start=None, end=None):
+    def search(
+        self,
+        function=lambda value: type(value) is int and value > 0,
+        start=None,
+        end=None,
+    ):
         """Returns a list of times that satisfy the function, between start and end times."""
         indices = []
         prev = None
@@ -42,7 +46,9 @@ class ValueChange(SortedDict):
     def __invert__(self):
         data = ValueChange(width=self.width)
         for key in self:
-            data[key] = None if self[key] == None else (~self[key] & (2 << self.width - 1) - 1)
+            data[key] = (
+                None if self[key] == None else (~self[key] & (2 << self.width - 1) - 1)
+            )
         return data
 
     def __neg__(self):
@@ -62,7 +68,11 @@ class ValueChange(SortedDict):
                 values[0] = self[key]
             if key in other:
                 values[1] = other[key]
-            reduced = None if (values[0] is None or values[1] is None) else binop(values[0], values[1])
+            reduced = (
+                None
+                if (values[0] is None or values[1] is None)
+                else binop(values[0], values[1])
+            )
             if reduced != values[2]:
                 values[2] = reduced
                 data[key] = reduced
@@ -106,10 +116,10 @@ class ValueChange(SortedDict):
 
     def __sub__(self, other):
         return self._binop(other, lambda x, y: x - y, max(self.width, other.width) + 1)
-    
+
     def __mod__(self, other):
         return self._binop(other, lambda x, y: x % y, self.width)
-    
+
     def _from(self):
         data = ValueChange(width=1)
         data[0] = 0
@@ -136,7 +146,7 @@ class ValueChange(SortedDict):
                 data[key + 1] = 0
                 break
         return data
-    
+
     def _before(self):
         data = ValueChange(width=1)
         data[0] = 1

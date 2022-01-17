@@ -3,8 +3,8 @@ import sys
 from ..exceptions import *
 from .wire import Wire
 
-class WireGroup:
 
+class WireGroup:
     def __init__(self, name: str):
         self.name = name
         self.groups = []
