@@ -43,7 +43,7 @@ sootty example/example1.vcd -l 8 -s "Data == const 20" -w "D1,Data" -d
 
 How to run in python (using the repl):
 
-```bash
+```python
 from sootty import WireTrace, Visualizer, Style
 
 # Create wiretrace object from vcd file:
