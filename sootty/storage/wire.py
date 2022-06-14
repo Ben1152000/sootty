@@ -58,7 +58,22 @@ class Wire:
         wire[value + 1] = 0
         return wire
 
+    def __andbit__(self, other):
+        wire = Wire(name="(" + self.name + " & " + other.name + ")")
+        wire._data = self._data.__andbit__(other._data)
+        return wire
+
+    def __orbit__(self, other):
+        wire = Wire(name="(" + self.name + " | " + other.name + ")")
+        wire._data = self._data.__orbit__(other._data)
+        return wire
+
     def __invert__(self):
+        wire = Wire(name="!" + self.name)
+        wire._data = self._data.__invert__()
+        return wire
+
+    def __notbit__(self):
         wire = Wire(name="~" + self.name)
         wire._data = self._data.__invert__()
         return wire
@@ -69,12 +84,12 @@ class Wire:
         return wire
 
     def __and__(self, other):
-        wire = Wire(name="(" + self.name + " & " + other.name + ")")
+        wire = Wire(name="(" + self.name + " && " + other.name + ")")
         wire._data = self._data.__and__(other._data)
         return wire
 
     def __or__(self, other):
-        wire = Wire(name="(" + self.name + " | " + other.name + ")")
+        wire = Wire(name="(" + self.name + " || " + other.name + ")")
         wire._data = self._data.__or__(other._data)
         return wire
 

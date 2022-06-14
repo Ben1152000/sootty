@@ -173,12 +173,22 @@ class WireTrace:
             return ~self._compute_wire(expr.children[0])
         elif expr.data.type == "NEG":
             return -self._compute_wire(expr.children[0])
-        elif expr.data.type == "AND":
+        elif expr.data.type == "BNOT":
+            return ~self._compute_wire(expr.children[0])
+        elif expr.data.type == "BAND":
             return self._compute_wire(expr.children[0]) & self._compute_wire(
                 expr.children[1]
             )
-        elif expr.data.type == "OR":
+        elif expr.data.type == "BOR":
             return self._compute_wire(expr.children[0]) | self._compute_wire(
+                expr.children[1]
+            )
+        elif expr.data.type == "AND":
+            return self._compute_wire(expr.children[0]) and self._compute_wire(
+                expr.children[1]
+            )
+        elif expr.data.type == "OR":
+            return self._compute_wire(expr.children[0]) or self._compute_wire(
                 expr.children[1]
             )
         elif expr.data.type == "XOR":
