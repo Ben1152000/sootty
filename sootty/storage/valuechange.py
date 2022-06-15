@@ -58,10 +58,7 @@ class ValueChange(SortedDict):
         return data
 
     def __not__(self):
-        if(self.width != 0):
-            return 1
-        else:
-            return 0
+        return not(self.width)
 
     def _binop(self, other, binop, width):
         data = ValueChange(width=width)

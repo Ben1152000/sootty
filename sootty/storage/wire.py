@@ -69,18 +69,18 @@ class Wire:
         return wire
 
     def __invert__(self):
-        wire = Wire(name="!" + self.name)
-        wire._data = self._data.__invert__()
-        return wire
-
-    def __notbit__(self):
         wire = Wire(name="~" + self.name)
         wire._data = self._data.__invert__()
         return wire
 
+    def __not__(self):
+        wire = Wire(name="!" + self.name)
+        wire._data = self._data.__not__()
+        return wire
+
     def __neg__(self):
         wire = Wire(name="-" + self.name)
-        wire._data = self._data.__invert__()
+        wire._data = self._data.__neg__()
         return wire
 
     def __and__(self, other):
