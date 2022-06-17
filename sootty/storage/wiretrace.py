@@ -159,94 +159,94 @@ class WireTrace:
         """Returns list of all wire names."""
         return self.root.get_names()
 
-    def evaluate(self, expr: str):
-        wire = self._compute_wire(LimitExpression(expr).tree)
-        return wire.times(self.length())
+    def _compute_wire(self, node):
+        if node.data == "wire":
+            return self.find(node.children[0])
+        elif node.data.type == "NOT":
+            return ~self._compute_wire(node.children[0])
+        elif node.data.type == "NEG":
+            return -self._compute_wire(node.children[0])
+        elif node.data.type == "AND":
+            return self._compute_wire(node.children[0]) & self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "OR":
+            return self._compute_wire(node.children[0]) | self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "XOR":
+            return self._compute_wire(node.children[0]) ^ self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "EQ":
+            return self._compute_wire(node.children[0]) == self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "NEQ":
+            return self._compute_wire(node.children[0]) != self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "GT":
+            return self._compute_wire(node.children[0]) > self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "GEQ":
+            return self._compute_wire(node.children[0]) >= self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "LT":
+            return self._compute_wire(node.children[0]) < self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "LEQ":
+            return self._compute_wire(node.children[0]) <= self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "SL":
+            return self._compute_wire(node.children[0]) << self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "SR":
+            return self._compute_wire(node.children[0]) >> self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "ADD":
+            return self._compute_wire(node.children[0]) + self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "SUB":
+            return self._compute_wire(node.children[0]) - self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "MOD":
+            return self._compute_wire(node.children[0]) % self._compute_wire(
+                node.children[1]
+            )
+        elif node.data.type == "FROM":
+            return self._compute_wire(node.children[0])._from()
+        elif node.data.type == "AFTER":
+            return self._compute_wire(node.children[0])._after()
+        elif node.data.type == "UNTIL":
+            return self._compute_wire(node.children[0])._until()
+        elif node.data.type == "BEFORE":
+            return self._compute_wire(node.children[0])._before()
+        elif node.data.type == "NEXT":
+            return self._compute_wire(node.children[0])._next()
+        elif node.data.type == "PREV":
+            return self._compute_wire(node.children[0])._prev()
+        elif node.data.type == "ACC":
+            return self._compute_wire(node.children[0])._acc()
+        elif node.data.type == "CONST":
+            return Wire.const(int(node.children[0]))
+        elif node.data.type == "TIME":
+            return Wire.time(int(node.children[0]))
+    
+    def compute_wire(self, expr: str):
+        """Evaluate a limit expression"""
+        return self._compute_wire(LimitExpression(expr).tree)
 
-    def _compute_wire(self, expr):
-        """
-        Evaluate a limit expression
-        """
-        if expr.data == "wire":
-            return self.find(expr.children[0])
-        elif expr.data.type == "NOT":
-            return ~self._compute_wire(expr.children[0])
-        elif expr.data.type == "NEG":
-            return -self._compute_wire(expr.children[0])
-        elif expr.data.type == "AND":
-            return self._compute_wire(expr.children[0]) & self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "OR":
-            return self._compute_wire(expr.children[0]) | self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "XOR":
-            return self._compute_wire(expr.children[0]) ^ self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "EQ":
-            return self._compute_wire(expr.children[0]) == self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "NEQ":
-            return self._compute_wire(expr.children[0]) != self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "GT":
-            return self._compute_wire(expr.children[0]) > self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "GEQ":
-            return self._compute_wire(expr.children[0]) >= self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "LT":
-            return self._compute_wire(expr.children[0]) < self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "LEQ":
-            return self._compute_wire(expr.children[0]) <= self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "SL":
-            return self._compute_wire(expr.children[0]) << self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "SR":
-            return self._compute_wire(expr.children[0]) >> self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "ADD":
-            return self._compute_wire(expr.children[0]) + self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "SUB":
-            return self._compute_wire(expr.children[0]) - self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "MOD":
-            return self._compute_wire(expr.children[0]) % self._compute_wire(
-                expr.children[1]
-            )
-        elif expr.data.type == "FROM":
-            return self._compute_wire(expr.children[0])._from()
-        elif expr.data.type == "AFTER":
-            return self._compute_wire(expr.children[0])._after()
-        elif expr.data.type == "UNTIL":
-            return self._compute_wire(expr.children[0])._until()
-        elif expr.data.type == "BEFORE":
-            return self._compute_wire(expr.children[0])._before()
-        elif expr.data.type == "NEXT":
-            return self._compute_wire(expr.children[0])._next()
-        elif expr.data.type == "PREV":
-            return self._compute_wire(expr.children[0])._prev()
-        elif expr.data.type == "ACC":
-            return self._compute_wire(expr.children[0])._acc()
-        elif expr.data.type == "CONST":
-            return Wire.const(int(expr.children[0]))
-        elif expr.data.type == "TIME":
-            return Wire.time(int(expr.children[0]))
+    def evaluate(self, expr: str):
+        return self.compute_wire(expr).times(self.length())
 
     def compute_limits(self, start_expr: str, end_expr: str):
         starts = self.evaluate(start_expr)

@@ -1,4 +1,4 @@
-import sys
+import sys, html
 from enum import Enum
 
 from .display import VectorImage
@@ -109,16 +109,30 @@ class Visualizer:
             height=height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN,
         )
 
-        svg += self._wiregroup_to_svg(
+        result = self._wiregroup_to_svg(
             wiregroup=wiretrace.root,
             left=self.style.LEFT_MARGIN,
             top=self.style.TOP_MARGIN + self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN,
             start=start,
             length=length,
             wires=wires,
-        )[
-            0
-        ]  # the first element is the svg data
+        )
+        svg += result[0]
+        index = result[1]
+
+        for wire in wires:
+            svg += self._wire_to_svg(
+                wiretrace.compute_wire(wire),
+                left=self.style.LEFT_MARGIN,
+                top=self.style.TOP_MARGIN
+                + self.style.WIRE_HEIGHT
+                + self.style.WIRE_MARGIN
+                + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                start=start,
+                length=length,
+            )
+            index += 1
+        wires.clear()  # TODO: fix temporary solution
 
         svg += "</svg>"
         return svg
@@ -200,7 +214,7 @@ class Visualizer:
                 "class": "small",
                 "fill": self.style.TEXT_COLOR,
                 "font-family": "monospace",
-                "content": wire.name if len(wire.name) <= 10 else wire.name[:7] + "...",
+                "content": html.escape(wire.name if len(wire.name) <= 10 else wire.name[:7] + "..."),
             }
         )
         for index in range(start, start + length):
