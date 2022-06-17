@@ -74,7 +74,7 @@ class Visualizer:
         )
 
     def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None):
-        if wires and len(wires) == 0:  # include all wires if empty list provided
+        if wires and len(wires) == 0:  # include all wires if empty list is provided
             wires = None
         width = (
             2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
@@ -109,6 +109,7 @@ class Visualizer:
             height=height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN,
         )
 
+        # Add the root wiregroup to the image.
         result = self._wiregroup_to_svg(
             wiregroup=wiretrace.root,
             left=self.style.LEFT_MARGIN,
@@ -120,6 +121,7 @@ class Visualizer:
         svg += result[0]
         index = result[1]
 
+        # Add each composite wire to the image.
         for wire in wires:
             svg += self._wire_to_svg(
                 wiretrace.compute_wire(wire),
@@ -132,7 +134,7 @@ class Visualizer:
                 length=length,
             )
             index += 1
-        wires.clear()  # TODO: fix temporary solution
+        wires.clear()  # TODO: fix temporary solution for catching exceptions
 
         svg += "</svg>"
         return svg
@@ -214,7 +216,9 @@ class Visualizer:
                 "class": "small",
                 "fill": self.style.TEXT_COLOR,
                 "font-family": "monospace",
-                "content": html.escape(wire.name if len(wire.name) <= 10 else wire.name[:7] + "..."),
+                "content": html.escape(
+                    wire.name if len(wire.name) <= 10 else wire.name[:7] + "..."
+                ),
             }
         )
         for index in range(start, start + length):
