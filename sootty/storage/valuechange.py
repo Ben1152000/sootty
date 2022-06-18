@@ -57,6 +57,9 @@ class ValueChange(SortedDict):
             data[key] = None if self[key] == None else (-self[key])
         return data
 
+    def __not__(self):
+        return not(self.width)
+
     def _binop(self, other, binop, width):
         data = ValueChange(width=width)
         keys = SortedSet()
@@ -79,10 +82,16 @@ class ValueChange(SortedDict):
         return data
 
     def __and__(self, other):
-        return self._binop(other, lambda x, y: x & y, max(self.width, other.width))
+        return self._binop(other, lambda x, y: x and y, max(self.width, other.width))
 
     def __or__(self, other):
-        return self._binop(other, lambda x, y: x | y, max(self.width, other.width))
+        return self._binop(other, lambda x, y: x or y, max(self.width, other.width))
+
+    def __andbit__(self, other):
+       return self._binop(other, lambda x, y: x & y, max(self.width, other.width))
+
+    def __orbit__(self, other):
+       return self._binop(other, lambda x, y: x | y, max(self.width, other.width))
 
     def __xor__(self, other):
         return self._binop(other, lambda x, y: x ^ y, max(self.width, other.width))

@@ -7,8 +7,11 @@
 start : lexp
 NAME: ("_"|LETTER) ("_"|LETTER|DIGIT)* ("." ("_"|LETTER|DIGIT)+)*
 
-AND : "&"
-OR : "|"
+BAND: "&"
+BOR: "|"
+BNOT: "~"
+AND : "&&"
+OR : "||"
 XOR : "^"
 EQ : "=="
 NEQ : "!="
@@ -42,10 +45,10 @@ rexp : sexp | rexp rop sexp
 sop : SL | SR
 sexp : aexp | sexp sop aexp
 
-aop : ADD | SUB | MOD
-aexp : wire | aexp aop wire
+abop : ADD | SUB | MOD | BAND | BOR
+aexp : wire | aexp abop wire
 
-uop : NOT | NEG
+uop : NOT | NEG | BNOT
 type : CONST | TIME
 top : FROM | AFTER | UNTIL | BEFORE
 tsop : NEXT | PREV
