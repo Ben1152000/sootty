@@ -122,19 +122,20 @@ class Visualizer:
         index = result[1]
 
         # Add each composite wire to the image.
-        for wire in wires:
-            svg += self._wire_to_svg(
-                wiretrace.compute_wire(wire),
-                left=self.style.LEFT_MARGIN,
-                top=self.style.TOP_MARGIN
-                + self.style.WIRE_HEIGHT
-                + self.style.WIRE_MARGIN
-                + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
-                start=start,
-                length=length,
-            )
-            index += 1
-        wires.clear()  # TODO: fix temporary solution for catching exceptions
+        if wires is not None:
+            for wire in wires:
+                svg += self._wire_to_svg(
+                    wiretrace.compute_wire(wire),
+                    left=self.style.LEFT_MARGIN,
+                    top=self.style.TOP_MARGIN
+                    + self.style.WIRE_HEIGHT
+                    + self.style.WIRE_MARGIN
+                    + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                    start=start,
+                    length=length,
+                )
+                index += 1
+            wires.clear()  # TODO: fix temporary solution for catching exceptions
 
         svg += "</svg>"
         return svg
