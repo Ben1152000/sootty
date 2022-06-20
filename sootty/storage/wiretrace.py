@@ -169,33 +169,32 @@ class WireTrace:
         """
         if expr.data == "wire":
             return self.find(expr.children[0])
-        elif expr.data.type == "NOT":
-            return ~self._compute_wire(expr.children[0])
         elif expr.data.type == "NEG":
-            return -self._compute_wire(expr.children[0])
-        elif expr.data.type == "BNOT":
-            return ~self._compute_wire(expr.children[0])
-        elif expr.data.type == "BAND":
+            return self._compute_wire(expr.children[0]).__neg__()
+        elif expr.data.type == "INV":
+            return self._compute_wire(expr.children[0]).__invert__()
+        elif expr.data.type == "AND":
             return self._compute_wire(expr.children[0]) & self._compute_wire(
                 expr.children[1]
             )
-        elif expr.data.type == "BOR":
-            return self._compute_wire(expr.children[0]) | self._compute_wire(
-                expr.children[1]
-            )
- 
-        elif expr.data.type == "AND":
-            return self._compute_wire(expr.children[0]) and self._compute_wire(
-                expr.children[1]
-            )
         elif expr.data.type == "OR":
-            return self._compute_wire(expr.children[0]) or self._compute_wire(
+            return self._compute_wire(expr.children[0]) | self._compute_wire(
                 expr.children[1]
             )
         elif expr.data.type == "XOR":
             return self._compute_wire(expr.children[0]) ^ self._compute_wire(
                 expr.children[1]
             )
+        elif expr.data.type == "LNOT":
+            return self._compute_wire(expr.children[0])._logical_not()
+        elif expr.data.type == "LAND":
+            return self._compute_wire(expr.children[0])._logical_and(self._compute_wire(
+                expr.children[1]
+            ))
+        elif expr.data.type == "LOR":
+            return self._compute_wire(expr.children[0])._logical_or(self._compute_wire(
+                expr.children[1]
+            ))
         elif expr.data.type == "EQ":
             return self._compute_wire(expr.children[0]) == self._compute_wire(
                 expr.children[1]

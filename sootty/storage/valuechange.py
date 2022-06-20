@@ -43,6 +43,14 @@ class ValueChange(SortedDict):
             indices.extend(range(prev + 1, end))
         return indices
 
+    def _to_bool(self):
+        data = ValueChange(width=1)
+        for key in self:
+            data[key] = (
+                None if self[key] == None else (int(bool(self[key])))
+            )
+        return data
+
     def __invert__(self):
         data = ValueChange(width=self.width)
         for key in self:
@@ -82,16 +90,10 @@ class ValueChange(SortedDict):
         return data
 
     def __and__(self, other):
-        return self._binop(other, lambda x, y: x and y, max(self.width, other.width))
+        return self._binop(other, lambda x, y: x & y, max(self.width, other.width))
 
     def __or__(self, other):
-        return self._binop(other, lambda x, y: x or y, max(self.width, other.width))
-
-    def __andbit__(self, other):
-       return self._binop(other, lambda x, y: x & y, max(self.width, other.width))
-
-    def __orbit__(self, other):
-       return self._binop(other, lambda x, y: x | y, max(self.width, other.width))
+        return self._binop(other, lambda x, y: x | y, max(self.width, other.width))
 
     def __xor__(self, other):
         return self._binop(other, lambda x, y: x ^ y, max(self.width, other.width))
