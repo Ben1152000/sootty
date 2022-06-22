@@ -1,2 +1,3 @@
 #! /bin/bash
 python3 -m pip install .
+mkdir $HOME/.config/sootty/save
