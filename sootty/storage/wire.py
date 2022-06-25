@@ -83,6 +83,20 @@ class Wire:
         wire._data = self._data.__xor__(other._data)
         return wire
 
+    def _logical_not(self):
+        wire = Wire(name="!" + self.name)
+        wire._data = self._data._to_bool().__invert__()
+        return wire
+
+    def _logical_and(self, other):
+        wire = Wire(name="(" + self.name + " && " + other.name + ")")
+        wire._data = self._data._to_bool().__and__(other._data._to_bool())
+        return wire
+
+    def _logical_or(self, other):
+        wire = Wire(name="(" + self.name + " || " + other.name + ")")
+        wire._data = self._data._to_bool().__or__(other._data._to_bool())
+
     def __eq__(self, other):
         wire = Wire(name="(" + self.name + " == " + other.name + ")")
         wire._data = self._data.__eq__(other._data)

@@ -14,9 +14,9 @@ The grammar for the temporal logic expression is described below:
 
 *num* ∈ Number (e.g., `0`, `1`, `2`, ...)
 
-*unop* ∈ UnaryOps := `!` | `-`
+*unop* ∈ UnaryOps := `!` | `-` | `~`
 
-*binop* ∈ BinaryOps := `&` | `|` | `^` | `==` | `!=` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `%`
+*binop* ∈ BinaryOps := `&` | `|` | `&&` | `||` | `^` | `==` | `!=` | `>` | `>=` | `<` | `<=` | `<<` | `>>` | `+` | `-` | `%`  
 
 *timeop* ∈ TimeOps := `from` | `after` | `until` | `before` | `next` | `prev` | *num* `next` | *num* `prev` | `acc`
 
@@ -30,9 +30,13 @@ The grammar for the temporal logic expression is described below:
 
 `x == const 5` — A wire with value 1 during all points when the value of x equals 5, and a 0 otherwise.
 
-`x & y` — A wire defined as the binary and of the values of x and y at each point in time.
+`x & y` — A wire defined as the bitwise and of the values of x and y at each point in time.
 
-`x ^ y` — A wire defined as the xor of the values of x and y at each point in time.
+`x ^ y` — A wire defined as the bitwise xor of the values of x and y at each point in time.
+
+`x && y` — A wire defined as the logical and of the values of x and y at each point in time.
+
+`x || y` — A wire defined as the logical or of the values of x and y at each point in time.
 
 `x << const 1` — A wire defined as the values of x shifted left by 1 at each point in time.
 
@@ -49,3 +53,16 @@ The grammar for the temporal logic expression is described below:
 `3 prev x` — A wire with the value of x at time t-3 shifted to time t.
 
 `acc clk` — A wire with a value equal to the number of rising edges of clk before each point in time. (The accumulated sum of values)
+
+## Operator Precedence
+
+The operator precendence defined in the grammar is as follows in descending order.
+
+- Parentheses — `()`
+- Unary operators — `!` | `~` | `-`
+- Modulus — `%`
+- Add, Subtract — `+` | `-`
+- Left Shift, Right Shift — `<<` | `>>`
+- Bitwise operators — `&` | `|` | `^`
+- Relational operators — `==` | `!=` | `>` | `>=` | `<` | `<=`
+- Logical operators — `&&` | `||`
