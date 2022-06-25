@@ -58,6 +58,8 @@ The grammar for the temporal logic expression is described below:
 
 The operator precendence defined in the grammar is as follows in descending order.
 
+- Parentheses — `()`
+- Unary operators — `!` | `~` | `-`
 - Modulus — `%`
 - Add, Subtract — `+` | `-`
 - Left Shift, Right Shift — `<<` | `>>`
