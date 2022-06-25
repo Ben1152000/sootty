@@ -8,8 +8,9 @@ def save_query(save, name, wires, br, length, start, end, display):
         if val is 'y':
             with open(save, 'w') as wf:
                 wf.truncate(0)
+                cwd = os.getcwd()
                 if name:
-                    wf.write("sootty -f \"" + name + "\"")
+                    wf.write("sootty -f \"" + cwd + "/" + name + "\"")
                 if wires:
                     wf.write(" -w \"" + wires + "\"")
                 if br:
