@@ -188,13 +188,13 @@ class WireTrace:
         elif expr.data.type == "LNOT":
             return self._compute_wire(expr.children[0])._logical_not()
         elif expr.data.type == "LAND":
-            return self._compute_wire(expr.children[0])._logical_and(self._compute_wire(
-                expr.children[1]
-            ))
+            return self._compute_wire(expr.children[0])._logical_and(
+                self._compute_wire(expr.children[1])
+            )
         elif expr.data.type == "LOR":
-            return self._compute_wire(expr.children[0])._logical_or(self._compute_wire(
-                expr.children[1]
-            ))
+            return self._compute_wire(expr.children[0])._logical_or(
+                self._compute_wire(expr.children[1])
+            )
         elif expr.data.type == "EQ":
             return self._compute_wire(expr.children[0]) == self._compute_wire(
                 expr.children[1]

@@ -10,7 +10,12 @@ def main():
         description="Converts .vcd wiretraces to .svg format."
     )
     parser.add_argument(
-        "-f", "--filename", metavar="FILENAME", required=False, type=str, help="input .vcd file"
+        "-f",
+        "--filename",
+        metavar="FILENAME",
+        required=False,
+        type=str,
+        help="input .vcd file",
     )
     parser.add_argument(
         "-s",
@@ -54,26 +59,33 @@ def main():
         help="comma-separated list of wires to view",
     )
     parser.add_argument(
-        '-S', 
-        '--save', 
-        type=str, 
-        metavar='', 
-        help='Save current query for reuse in a .txt file'
+        "-S",
+        "--save",
+        type=str,
+        metavar="",
+        help="Save current query for reuse in a .txt file",
     )
     parser.add_argument(
-        '-R', 
-        '--reload', 
-        type=str, 
-        metavar='', 
-        help='Loads the saved query'
+        "-R", "--reload", type=str, metavar="", help="Loads the saved query"
     )
     args = parser.parse_args()
-    
+
     if args.save is not None:
-        if(args.reload):
-            raise Exception("Save and Reload flags should not be provided simultaneously.")
-        sv.save_query(args.save, args.filename, args.wires, args.breakpoints, args.length, args.start, args.end, args.display) 
-    
+        if args.reload:
+            raise Exception(
+                "Save and Reload flags should not be provided simultaneously."
+            )
+        sv.save_query(
+            args.save,
+            args.filename,
+            args.wires,
+            args.breakpoints,
+            args.length,
+            args.start,
+            args.end,
+            args.display,
+        )
+
     if args.reload is not None:
         sv.reload_query(args.reload)
         exit(0)
