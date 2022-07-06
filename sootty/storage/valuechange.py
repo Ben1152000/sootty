@@ -43,6 +43,14 @@ class ValueChange(SortedDict):
             indices.extend(range(prev + 1, end))
         return indices
 
+    def _to_bool(self):
+        data = ValueChange(width=1)
+        for key in self:
+            data[key] = (
+                None if self[key] == None else (int(bool(self[key])))
+            )
+        return data
+
     def __invert__(self):
         data = ValueChange(width=self.width)
         for key in self:
@@ -56,6 +64,9 @@ class ValueChange(SortedDict):
         for key in self:
             data[key] = None if self[key] == None else (-self[key])
         return data
+
+    def __not__(self):
+        return not(self.width)
 
     def _binop(self, other, binop, width):
         data = ValueChange(width=width)

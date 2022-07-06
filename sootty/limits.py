@@ -34,10 +34,16 @@ class Prune(Visitor):
     def rexp(self, tree):
         self.binexp(tree)
 
+    def bexp(self, tree):
+        self.binexp(tree)
+
     def sexp(self, tree):
         self.binexp(tree)
 
     def aexp(self, tree):
+        self.binexp(tree)
+    
+    def mexp(self, tree):
         self.binexp(tree)
 
     def wire(self, tree):

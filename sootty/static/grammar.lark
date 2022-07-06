@@ -9,7 +9,11 @@ NAME: ("_"|LETTER) ("_"|LETTER|DIGIT)* ("." ("_"|LETTER|DIGIT)+)*
 
 AND : "&"
 OR : "|"
+INV : "~"
 XOR : "^"
+LAND : "&&"
+LOR : "||"
+NOT : "!"
 EQ : "=="
 NEQ : "!="
 GT : ">"
@@ -20,11 +24,10 @@ SL : "<<"
 SR : ">>"
 ADD : "+"
 SUB : "-"
+NEG : "-"
 MOD : "%"
 CONST : "const"
 TIME : "time"
-NOT : "!"
-NEG : "-"
 FROM : "from"
 AFTER : "after"
 UNTIL : "until"
@@ -33,19 +36,25 @@ NEXT : "next"
 PREV : "prev"
 ACC : "acc"
 
-lop : AND | OR | XOR
+lop : LAND | LOR
 lexp : rexp | lexp lop rexp
 
 rop : EQ | NEQ | GT | GEQ | LT | LEQ
-rexp : sexp | rexp rop sexp
+rexp : bexp | rexp rop bexp
+
+bop : AND | OR | XOR
+bexp : sexp | bexp bop sexp
 
 sop : SL | SR
 sexp : aexp | sexp sop aexp
 
-aop : ADD | SUB | MOD
-aexp : wire | aexp aop wire
+aop : ADD | SUB
+aexp : mexp | aexp aop mexp
 
-uop : NOT | NEG
+mop : MOD
+mexp : wire | mexp mop wire
+
+uop : INV | NEG | NOT
 type : CONST | TIME
 top : FROM | AFTER | UNTIL | BEFORE
 tsop : NEXT | PREV

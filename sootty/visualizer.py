@@ -12,8 +12,8 @@ class Style:
         TOP_MARGIN = 15
         LEFT_MARGIN = 15
         CHAR_WIDTH = 7
-        LABEL_WIDTH = 12
-        TEXT_WIDTH = CHAR_WIDTH * LABEL_WIDTH
+        LABEL_WIDTH = 10
+        TEXT_WIDTH = CHAR_WIDTH * (LABEL_WIDTH + 2)
         FULL_WIDTH = 800
         WIRE_HEIGHT = 20
         WIRE_MARGIN = 10
@@ -218,7 +218,9 @@ class Visualizer:
                 "fill": self.style.TEXT_COLOR,
                 "font-family": "monospace",
                 "content": html.escape(
-                    wire.name if len(wire.name) <= 10 else wire.name[:7] + "..."
+                    wire.name
+                    if len(wire.name) <= self.style.LABEL_WIDTH
+                    else wire.name[: max(self.style.LABEL_WIDTH - 3, 0)] + "..."
                 ),
             }
         )

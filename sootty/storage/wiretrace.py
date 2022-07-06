@@ -160,12 +160,15 @@ class WireTrace:
         return self.root.get_names()
 
     def _compute_wire(self, node):
+        """
+        Evaluate a limit expression
+        """
         if node.data == "wire":
             return self.find(node.children[0])
-        elif node.data.type == "NOT":
-            return ~self._compute_wire(node.children[0])
         elif node.data.type == "NEG":
-            return -self._compute_wire(node.children[0])
+            return self._compute_wire(node.children[0]).__neg__()
+        elif node.data.type == "INV":
+            return self._compute_wire(node.children[0]).__invert__()
         elif node.data.type == "AND":
             return self._compute_wire(node.children[0]) & self._compute_wire(
                 node.children[1]
@@ -178,6 +181,16 @@ class WireTrace:
             return self._compute_wire(node.children[0]) ^ self._compute_wire(
                 node.children[1]
             )
+        elif node.data.type == "LNOT":
+            return self._compute_wire(node.children[0])._logical_not()
+        elif node.data.type == "LAND":
+            return self._compute_wire(node.children[0])._logical_and(self._compute_wire(
+                node.children[1]
+            ))
+        elif node.data.type == "LOR":
+            return self._compute_wire(node.children[0])._logical_or(self._compute_wire(
+                node.children[1]
+            ))
         elif node.data.type == "EQ":
             return self._compute_wire(node.children[0]) == self._compute_wire(
                 node.children[1]
