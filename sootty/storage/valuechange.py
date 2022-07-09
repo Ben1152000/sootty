@@ -81,7 +81,7 @@ class ValueChange(SortedDict):
                 values[1] = other[key]
             reduced = (
                 None
-                if (values[0] is None or values[1] is None)
+                if (values[0] is None or values[1] is None or type(values[0] == str) or type(values[1] == str))
                 else binop(values[0], values[1])
             )
             if reduced != values[2]:
