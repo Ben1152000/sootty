@@ -1,4 +1,6 @@
 import sys, argparse
+
+from sootty.exceptions import SoottyError
 from . import save as sv
 from .storage import WireTrace
 from .visualizer import Visualizer
@@ -72,7 +74,7 @@ def main():
 
     if args.save is not None:
         if args.reload:
-            raise Exception(
+            raise SoottyError(
                 "Save and Reload flags should not be provided simultaneously."
             )
         sv.save_query(
