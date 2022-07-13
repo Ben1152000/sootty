@@ -63,8 +63,6 @@ def main():
     parser.add_argument(
         "-S",
         "--save",
-        nargs="?",
-        const="temp.txt",
         type=str,
         metavar="",
         help="Save current query for reuse in a .txt file",
