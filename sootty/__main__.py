@@ -53,7 +53,18 @@ def main():
         dest="wires",
         help="comma-separated list of wires to view",
     )
+    arg_radix = parser.add_argument(
+        "-r",
+        "--radix",
+        type=int,
+        default=10,
+        dest="radix",
+        help="displayed radix of data numbers (2 - 33)",
+    )
     args = parser.parse_args()
+
+    if args.radix < 2 or args.radix > 33:
+        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 33")
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(args.filename)
@@ -87,7 +98,7 @@ def main():
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints
+        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=args.radix,
     )
 
     if wires is not None and len(wires):
