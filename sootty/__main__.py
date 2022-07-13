@@ -63,12 +63,20 @@ def main():
     parser.add_argument(
         "-S",
         "--save",
+        nargs="?",
+        const="temp.txt",
         type=str,
         metavar="",
         help="Save current query for reuse in a .txt file",
     )
     parser.add_argument(
-        "-R", "--reload", type=str, metavar="", help="Loads the saved query"
+        "-R",
+        "--reload",
+        nargs="?",
+        const="temp.txt",
+        type=str,
+        metavar="",
+        help="Loads the saved query",
     )
     args = parser.parse_args()
 

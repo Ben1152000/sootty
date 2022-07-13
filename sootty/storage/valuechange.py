@@ -46,9 +46,7 @@ class ValueChange(SortedDict):
     def _to_bool(self):
         data = ValueChange(width=1)
         for key in self:
-            data[key] = (
-                None if self[key] == None else (int(bool(self[key])))
-            )
+            data[key] = None if self[key] == None else (int(bool(self[key])))
         return data
 
     def __invert__(self):
@@ -66,9 +64,9 @@ class ValueChange(SortedDict):
         return data
 
     def __not__(self):
-        return not(self.width)
+        return not (self.width)
 
-    def _binop(self, other, binop, width, xz = 0):
+    def _binop(self, other, binop, width, xz=0):
         data = ValueChange(width=width)
         keys = SortedSet()
         keys.update(self.keys())
@@ -81,15 +79,19 @@ class ValueChange(SortedDict):
             if key in other:
                 values[1] = other[key]
             if xz == 1:
-                if(values[0] == 0 or values[1] == 0):       # xz = 1 is logical and
+                if values[0] == 0 or values[1] == 0:  # xz = 1 is logical and
                     reduced = 0
-            if xz == 2:                                     # xz = 2 is logical or                        
-                if(values[0] == 1 or values [1] == 1):    
+            if xz == 2:  # xz = 2 is logical or
+                if values[0] == 1 or values[1] == 1:
                     reduced = 1
             if reduced is None:
                 reduced = (
                     None
-                    if ((values[0] is None or values[1] is None) or (type(values[0]) == str) or (type(values[1]) == str))
+                    if (
+                        (values[0] is None or values[1] is None)
+                        or (type(values[0]) == str)
+                        or (type(values[1]) == str)
+                    )
                     else binop(values[0], values[1])
                 )
             if reduced != values[2]:
