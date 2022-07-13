@@ -75,7 +75,7 @@ def main():
     if args.save is not None:
         if args.reload:
             raise SoottyError(
-                "Save and Reload flags should not be provided simultaneously."
+                f"Save and Reload flags should not be provided simultaneously."
             )
         sv.save_query(
             args.save,
