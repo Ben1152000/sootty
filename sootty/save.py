@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 
 def save_query(save, name, wires, br, length, start, end, display):
@@ -10,7 +9,7 @@ def save_query(save, name, wires, br, length, start, end, display):
     with open(save, "w") as wf:
         wf.truncate(0)
         if name:
-            wf.write('sootty -f "' + name + '"')
+            wf.write(' -f "' + name + '"')
         if wires:
             wf.write(' -w "' + wires + '"')
         if br:
@@ -23,13 +22,6 @@ def save_query(save, name, wires, br, length, start, end, display):
             wf.write(' -e "' + end + '"')
         if display:
             wf.write(" -d")
-
-
-def reload_query(reload):
-    reload = os.getenv("HOME") + "/.config/sootty/save/" + reload
-    with open(reload, "r") as rf:
-        cmd = rf.readline()
-        process = subprocess.run(cmd, shell=True)
 
 
 def is_save_file(filename):
