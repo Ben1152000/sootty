@@ -101,35 +101,83 @@ def main():
         if args.filename is None:
             raise Exception("No input file provided.")
 
+    compile(args.filename, args.wires, args.breakpoints, args.length, args.start, args.end, args.display) 
     # Load vcd file into wiretrace object.
-    wiretrace = WireTrace.from_vcd(args.filename)
+    #wiretrace = WireTrace.from_vcd(args.filename)
+#
+    ## Check that window bounds are well-defined.
+    #if args.end is not None and args.length is not None:
+    #    raise Exception("Length and end flags should not be provided simultaneously.")
+#
+    ## Calculate window bounds.
+    #if args.end is not None:
+    #    if args.start is not None:
+    #        start, end = wiretrace.compute_limits(args.start, args.end)
+    #    else:
+    #        start, end = wiretrace.compute_limits("time 0", args.end)
+    #    length = end - start
+    #else:
+    #    if args.start is not None:
+    #        start, end = wiretrace.compute_limits(args.start, "time 0")
+    #    else:
+    #        start = 0
+    #    length = args.length if args.length is not None else wiretrace.length() - start
+#
+    ## Calculate breakpoints
+    #breakpoints = None
+    #if args.breakpoints is not None:
+    #    breakpoints = wiretrace.evaluate(args.breakpoints)
+#
+    #wires = None
+    #if args.wires:
+    #    wires = set([name.strip() for name in args.wires.split(",")])
+#
+    ## Convert wiretrace to graphical vector image.
+    #image = Visualizer().to_svg(
+    #    wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints
+    #)
+#
+    #if wires is not None and len(wires):
+    #    raise Exception(
+    #        f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
+    #    )
+#
+    #if args.display:
+    #    image.display()
+#
+    #else:
+    #    print(image.source)
+
+def compile(filename, wires, breakpoints, length, start, end, display):
+
+    # Load vcd file into wiretrace object.
+    wiretrace = WireTrace.from_vcd(filename)
 
     # Check that window bounds are well-defined.
-    if args.end is not None and args.length is not None:
+    if end is not None and length is not None:
         raise Exception("Length and end flags should not be provided simultaneously.")
 
     # Calculate window bounds.
-    if args.end is not None:
-        if args.start is not None:
-            start, end = wiretrace.compute_limits(args.start, args.end)
+    if end is not None:
+        if start is not None:
+            start, end = wiretrace.compute_limits(start, end)
         else:
-            start, end = wiretrace.compute_limits("time 0", args.end)
+            start, end = wiretrace.compute_limits("time 0", end)
         length = end - start
     else:
-        if args.start is not None:
-            start, end = wiretrace.compute_limits(args.start, "time 0")
+        if start is not None:
+            start, end = wiretrace.compute_limits(start, "time 0")
         else:
             start = 0
-        length = args.length if args.length is not None else wiretrace.length() - start
+        length = length if length is not None else wiretrace.length() - start
 
     # Calculate breakpoints
     breakpoints = None
-    if args.breakpoints is not None:
-        breakpoints = wiretrace.evaluate(args.breakpoints)
+    if breakpoints is not None:
+        breakpoints = wiretrace.evaluate(breakpoints)
 
-    wires = None
-    if args.wires:
-        wires = set([name.strip() for name in args.wires.split(",")])
+    if wires:
+        wires = set([name.strip() for name in wires.split(",")])
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
@@ -141,7 +189,7 @@ def main():
             f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
         )
 
-    if args.display:
+    if display:
         image.display()
 
     else:
