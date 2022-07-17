@@ -11,7 +11,7 @@ def main():
     reload_path = os.getenv("HOME") + "/.config/sootty/save/"
     if os.path.isdir(reload_path) is False:
         os.makedirs(reload_path)
-        
+
     parser = argparse.ArgumentParser(
         description="Converts .vcd wiretraces to .svg format."
     )
@@ -74,7 +74,6 @@ def main():
     parser.add_argument(
         "-R",
         "--reload",
-        nargs="?",
         const="temp.txt",
         type=str,
         metavar="",
