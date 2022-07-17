@@ -42,7 +42,7 @@ class Prune(Visitor):
 
     def aexp(self, tree):
         self.binexp(tree)
-    
+
     def mexp(self, tree):
         self.binexp(tree)
 
