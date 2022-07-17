@@ -21,7 +21,7 @@ def main():
         metavar="FILENAME",
         required=False,
         type=str,
-        help="input .vcd file",
+        help="input .vcd file. Required unless reloading.",
     )
     parser.add_argument(
         "-s",
@@ -68,16 +68,15 @@ def main():
         "-S",
         "--save",
         type=str,
-        metavar="",
+        metavar="SAVENAME",
         help="Save current query for reuse in a .txt file",
     )
     parser.add_argument(
         "-R",
         "--reload",
-        const="temp.txt",
         type=str,
-        metavar="",
-        help="Loads the saved query",
+        metavar="SAVENAME",
+        help="Loads a saved query. Requires query name as string.",
     )
     args = parser.parse_args()
 
@@ -102,7 +101,8 @@ def main():
         exit(0)
     else:
         if args.filename is None:
-            raise Exception("No input file provided.")
+            parser.print_usage()
+            exit(0)
 
     compile(
         args.filename,

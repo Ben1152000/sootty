@@ -15,7 +15,7 @@ def save_query(save, name, wires, br, length, start, end, display):
         if br:
             wf.write(' -b "' + br + '"')
         if length:
-            wf.write(' -l "' + length + '"')
+            wf.write(' -l "' + str(length) + '"')
         if start:
             wf.write(' -s "' + start + '"')
         if end:
