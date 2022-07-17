@@ -66,7 +66,7 @@ class ValueChange(SortedDict):
     def __not__(self):
         return not (self.width)
 
-    def _binop(self, other, binop, width, xz=0):
+    def _binop(self, other, binop, width, xz_flag=0):
         data = ValueChange(width=width)
         keys = SortedSet()
         keys.update(self.keys())
@@ -78,10 +78,10 @@ class ValueChange(SortedDict):
                 values[0] = self[key]
             if key in other:
                 values[1] = other[key]
-            if xz == 1:
+            if xz_flag == 1:
                 if values[0] == 0 or values[1] == 0:  # xz = 1 is logical and
                     reduced = 0
-            if xz == 2:  # xz = 2 is logical or
+            if xz_flag == 2:  # xz = 2 is logical or
                 if values[0] == 1 or values[1] == 1:
                     reduced = 1
             if reduced is None:
