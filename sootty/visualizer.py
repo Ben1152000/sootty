@@ -74,7 +74,7 @@ class Visualizer:
         )
 
     def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None):
-        if wires and len(wires) == 0:  # include all wires if empty list provided
+        if wires and len(wires) == 0:  # include all wires if empty list is provided
             wires = None
         width = (
             2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
@@ -109,16 +109,33 @@ class Visualizer:
             height=height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN,
         )
 
-        svg += self._wiregroup_to_svg(
+        # Add the root wiregroup to the image.
+        result = self._wiregroup_to_svg(
             wiregroup=wiretrace.root,
             left=self.style.LEFT_MARGIN,
             top=self.style.TOP_MARGIN + self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN,
             start=start,
             length=length,
             wires=wires,
-        )[
-            0
-        ]  # the first element is the svg data
+        )
+        svg += result[0]
+        index = result[1]
+
+        # Add each composite wire to the image.
+        if wires is not None:
+            for wire in wires:
+                svg += self._wire_to_svg(
+                    wiretrace.compute_wire(wire),
+                    left=self.style.LEFT_MARGIN,
+                    top=self.style.TOP_MARGIN
+                    + self.style.WIRE_HEIGHT
+                    + self.style.WIRE_MARGIN
+                    + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                    start=start,
+                    length=length,
+                )
+                index += 1
+            wires.clear()  # TODO: fix temporary solution for catching exceptions
 
         svg += "</svg>"
         return svg
