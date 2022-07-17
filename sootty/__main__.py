@@ -7,7 +7,7 @@ from .visualizer import Visualizer
 
 
 def main():
-    
+
     reload_path = os.getenv("HOME") + "/.config/sootty/save/"
     if os.path.isdir(reload_path) is False:
         os.makedirs(reload_path)
@@ -114,6 +114,7 @@ def main():
         args.display,
     )
 
+
 def compile(filename, wires, breakpoints, length, start, end, display):
 
     # Load vcd file into wiretrace object.
@@ -162,7 +163,7 @@ def compile(filename, wires, breakpoints, length, start, end, display):
         print(image.source)
 
 
-def reload_query(parser, reload, reload_path): 
+def reload_query(parser, reload, reload_path):
     reload = reload_path + reload
     with open(reload, "r") as rf:
         cmd = rf.readline()
