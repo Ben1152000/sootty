@@ -1,4 +1,4 @@
-import sys
+import sys, html
 from enum import Enum
 
 from .display import VectorImage
@@ -13,8 +13,8 @@ class Style:
         TOP_MARGIN = 15
         LEFT_MARGIN = 15
         CHAR_WIDTH = 7
-        LABEL_WIDTH = 12
-        TEXT_WIDTH = CHAR_WIDTH * LABEL_WIDTH
+        LABEL_WIDTH = 10
+        TEXT_WIDTH = CHAR_WIDTH * (LABEL_WIDTH + 2)
         FULL_WIDTH = 800
         WIRE_HEIGHT = 20
         WIRE_MARGIN = 10
@@ -110,17 +110,33 @@ class Visualizer:
             height=height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN,
         )
 
-        svg += self._wiregroup_to_svg(
+        # Add the root wiregroup to the image.
+        result = self._wiregroup_to_svg(
             wiregroup=wiretrace.root,
             left=self.style.LEFT_MARGIN,
             top=self.style.TOP_MARGIN + self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN,
             start=start,
             length=length,
             wires=wires,
-            vector_radix=vector_radix,
-        )[
-            0
-        ]  # the first element is the svg data
+        )
+        svg += result[0]
+        index = result[1]
+
+        # Add each composite wire to the image.
+        if wires is not None:
+            for wire in wires:
+                svg += self._wire_to_svg(
+                    wiretrace.compute_wire(wire),
+                    left=self.style.LEFT_MARGIN,
+                    top=self.style.TOP_MARGIN
+                    + self.style.WIRE_HEIGHT
+                    + self.style.WIRE_MARGIN
+                    + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                    start=start,
+                    length=length,
+                )
+                index += 1
+            wires.clear()  # TODO: fix temporary solution for catching exceptions
 
         svg += "</svg>"
         return svg
@@ -204,7 +220,11 @@ class Visualizer:
                 "class": "small",
                 "fill": self.style.TEXT_COLOR,
                 "font-family": "monospace",
-                "content": wire.name if len(wire.name) <= 10 else wire.name[:7] + "...",
+                "content": html.escape(
+                    wire.name
+                    if len(wire.name) <= self.style.LABEL_WIDTH
+                    else wire.name[: max(self.style.LABEL_WIDTH - 3, 0)] + "..."
+                ),
             }
         )
         for index in range(start, start + length):
