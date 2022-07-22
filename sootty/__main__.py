@@ -1,5 +1,6 @@
 import sys, argparse
 import os, shlex
+import yaml
 from sootty.exceptions import SoottyError
 from . import save as sv
 from .storage import WireTrace
@@ -12,6 +13,8 @@ def main():
     if os.path.isdir(reload_path) is False:
         os.makedirs(reload_path)
 
+    savefile = reload_path + "queries.yaml"
+    
     parser = argparse.ArgumentParser(
         description="Converts .vcd wiretraces to .svg format."
     )
@@ -97,7 +100,7 @@ def main():
         )
 
     if args.reload is not None:
-        reload_query(parser, args.reload, reload_path)
+        reload_query(parser, args.reload, savefile)
         exit(0)
     else:
         if args.filename is None:
@@ -163,10 +166,15 @@ def compile(filename, wires, breakpoints, length, start, end, display):
         print(image.source)
 
 
-def reload_query(parser, reload, reload_path):
-    reload = reload_path + reload
-    with open(reload, "r") as rf:
-        cmd = rf.readline()
+def reload_query(parser, reload, savefile):
+    with open(savefile, "r") as stream:
+        try:
+            dat = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+            parser.print_usage()
+            exit(1)
+        cmd = dat[reload]["query"]
     args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
 
     compile(
