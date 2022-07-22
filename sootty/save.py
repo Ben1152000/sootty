@@ -1,28 +1,30 @@
 import os
-
+import datetime
 
 def save_query(save, name, wires, br, length, start, end, display):
-    save = os.getenv("HOME") + "/.config/sootty/save/" + save
+    savefile = os.getenv("HOME") + "/.config/sootty/save.yaml"
     """
     Constructing the query using conditionals
     """
-    with open(save, "w") as wf:
-        wf.truncate(0)
+    with open(savefile, "a") as stream:
+        stream.write(save + ":\n")
+        stream.write("  query:")
         if name:
-            wf.write(' -f "' + name + '"')
+            stream.write(' -f "' + name + '"')
         if wires:
-            wf.write(' -w "' + wires + '"')
+            stream.write(' -w "' + wires + '"')
         if br:
-            wf.write(' -b "' + br + '"')
+            stream.write(' -b "' + br + '"')
         if length:
-            wf.write(' -l "' + str(length) + '"')
+            stream.write(' -l "' + str(length) + '"')
         if start:
-            wf.write(' -s "' + start + '"')
+            stream.write(' -s "' + start + '"')
         if end:
-            wf.write(' -e "' + end + '"')
+            stream.write(' -e "' + end + '"')
         if display:
-            wf.write(" -d")
-
+            stream.write(" -d")
+        stream.write("\n")
+        stream.write("  date: " + str(datetime.datetime.now()) + "\n")
 
 def is_save_file(filename):
     return os.path.isfile(filename)
