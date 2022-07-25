@@ -1,4 +1,4 @@
-import sys, argparse
+import argparse
 import os, shlex
 import yaml
 from sootty.exceptions import SoottyError
