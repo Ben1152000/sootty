@@ -37,8 +37,9 @@ def query_write(savefile_path, savefile, save, name, wires, br, length, start, e
     with open(savefile_path, "r+") as stream:
         lines = yaml.safe_load(stream) 
         if save in lines:
-            lines[save]["query"] = query_build(name, wires, br, length, start, end, display)
-            lines[save]["date"] = str(datetime.datetime.now())
+            del lines[save]                                          # Deleting outdated query
+            overwrite_dict = {save: {'query': query_build(name, wires, br, length, start, end, display), 'date': str(datetime.datetime.now())}}
+            lines.update(overwrite_dict)                             # Essentially replacing the old query with the new dict
             stream.truncate(0)
             yaml.dump(lines, savefile, sort_keys = False)            # Dumping the overwritten query to the file, forcing no inline output
         else:
