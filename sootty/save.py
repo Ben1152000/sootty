@@ -5,20 +5,30 @@ import yaml
 
 def save_query(save, name, wires, br, length, start, end, display):
     savefile = os.getenv("HOME") + "/.config/sootty/save/queries.yaml"
-    """
-    Memory check for the file
-    """
-    with open(savefile) as f:
-        lines = yaml.safe_load(f)
-        if len(lines) >= 500:
-            stat = lines.popitem(last=False)
-            if stat is None:                                                # No lines to delete/Error
-                raise SoottyError("Error deleting least recent query.")
-            yaml.dump(lines, f, sort_keys = False)
     
     if is_save_file(savefile):
+        """
+        Memory check for the file
+        """
+        with open(savefile, "r") as f:
+            lines = yaml.safe_load(f)
+        if save in lines:
+            pass
+        else:    
+            with open(savefile, "w") as stream:
+                if len(lines) >= 10:
+                    stream.truncate(0)
+                    for key in lines:
+                        stat = lines.pop(key)
+                        break
+                    #print(lines)
+                    if stat is None:                                                # No lines to delete/Error
+                        raise SoottyError("Error deleting least recent query.")
+                    yaml.dump(lines, stream, sort_keys = False)
+
         with open(savefile, "a+") as stream:
             query_write(savefile, stream, save, name, wires, br, length, start, end, display)
+    
     else:
         with open(savefile, "w") as stream:
             query_write(savefile, stream, save, name, wires, br, length, start, end, display)
