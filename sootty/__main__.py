@@ -14,7 +14,7 @@ def main():
         os.makedirs(reload_path)
 
     savefile = reload_path + "queries.yaml"
-    
+
     parser = argparse.ArgumentParser(
         description="Converts .vcd wiretraces to .svg format."
     )
