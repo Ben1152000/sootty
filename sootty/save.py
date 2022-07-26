@@ -1,4 +1,4 @@
-import os
+import os, sys
 from sootty.exceptions import SoottyError
 import datetime
 import yaml
@@ -17,7 +17,8 @@ def save_query(save, name, wires, br, length, start, end, display):
             pass
         else:
             with open(savefile, "w") as stream:
-                if len(lines) >= 10:
+                if len(lines) >= 500:
+                    print("Saved query limit reached. Deleting least recent query to accommodate new query.", file = sys.stderr)
                     stream.truncate(0)
                     for key in lines:
                         stat = lines.pop(key)
