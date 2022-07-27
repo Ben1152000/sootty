@@ -18,15 +18,17 @@ def save_query(save, name, wires, br, length, start, end, display):
         else:
             with open(savefile, "w") as stream:
                 if len(lines) >= 500:
-                    print("Saved query limit reached. Deleting least recent query to accommodate new query.", file = sys.stderr)
+                    print(
+                        "Saved query limit reached. Deleting least recent query to accommodate new query.",
+                        file=sys.stderr,
+                    )
                     stream.truncate(0)
                     for key in lines:
                         stat = lines.pop(key)
                         break
-                    # print(lines)
                     if stat is None:  # No lines to delete/Error
                         raise SoottyError("Error deleting least recent query.")
-                    yaml.dump(lines, stream, sort_keys=False)
+                    yaml.dump(lines, stream, sort_keys=False, width=float("inf"))
 
         with open(savefile, "a+") as stream:
             query_write(
@@ -34,6 +36,7 @@ def save_query(save, name, wires, br, length, start, end, display):
             )
 
     else:
+        # Creating new savefile as no savefiles found for sootty
         with open(savefile, "w") as stream:
             query_write(
                 savefile, stream, save, name, wires, br, length, start, end, display
@@ -58,7 +61,7 @@ def query_write(
             )  # Essentially replacing the old query with the new dict
             stream.truncate(0)
             yaml.dump(
-                lines, savefile, sort_keys=False
+                lines, savefile, sort_keys=False, width=float("inf")
             )  # Dumping the overwritten query to the file, forcing no inline output
         else:
             savefile.write(save + ":\n")

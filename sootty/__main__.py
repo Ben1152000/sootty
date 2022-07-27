@@ -100,7 +100,18 @@ def main():
         )
 
     if args.reload is not None:
-        reload_query(parser, args.reload, savefile)
+        reload_query(
+            parser,
+            args.filename,
+            args.wires,
+            args.breakpoints,
+            args.length,
+            args.start,
+            args.end,
+            args.display,
+            args.reload,
+            savefile,
+        )
         exit(0)
     else:
         if args.filename is None:
@@ -166,7 +177,9 @@ def compile(filename, wires, breakpoints, length, start, end, display):
         print(image.source)
 
 
-def reload_query(parser, reload, savefile):
+def reload_query(
+    parser, filename, wires, breakpoints, length, start, end, display, reload, savefile
+):
     with open(savefile, "r") as stream:
         try:
             dat = yaml.safe_load(stream)
@@ -176,6 +189,30 @@ def reload_query(parser, reload, savefile):
             exit(1)
         cmd = dat[reload]["query"]
     args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
+
+    print(args)
+
+    # Updating specifc flags for a relaoded query
+
+    if filename is not None:
+        args.filename = filename
+    if wires is not None:
+        args.wires = wires
+    if breakpoints is not None:
+        args.breakpoints = breakpoints
+    if length is not None:
+        args.length = length
+    if start is not None:
+        args.start = start
+    if end is not None:
+        args.end = end
+
+    print(args)
+
+    if length is not None and end is not None:
+        raise SoottyError(
+            f"Length and end flags should not be provided simultaneously."
+        )
 
     compile(
         args.filename,
