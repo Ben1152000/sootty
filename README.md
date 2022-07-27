@@ -17,11 +17,12 @@ python3 -m pip install sootty
 To use, run:
 
 ```bash
-sootty waveform.vcd > image.svg
+sootty -f "waveform.vcd" > image.svg
 ```
 
-with a vcs file to produce an svg waveform diagram. Optional arguments include:
-- `-s | --start FORMULA` Specity the start of the window.
+with a vcd file to produce an svg waveform diagram. Optional arguments include:
+- `-f | --filename FILENAME` Specify the vcd file name.
+- `-s | --start FORMULA` Specify the start of the window.
 - `-e | --end FORMULA` Specify the end of the window.
 - `-l | --length N` Specify the number of ticks in the window (mutually exclusive with `-e`).
 - `-d` Display the output to the terminal (requires viu).
@@ -32,13 +33,25 @@ with a vcs file to produce an svg waveform diagram. Optional arguments include:
 Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
 
 ```bash
-sootty example/example3.vcd -s "time 4" -e "acc clk == const 10" -w "clk,rst_n,pc,inst" -d
+sootty -f "example/example3.vcd" -s "time 4" -e "acc clk == const 10" -w "clk,rst_n,pc,inst" -d
 ```
 
 Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal to 20:
 
 ```bash
-sootty example/example1.vcd -l 8 -s "Data == const 20" -w "D1,Data" -d
+sootty -f "example/example1.vcd" -l 8 -s "Data == const 20" -w "D1,Data" -d
+```
+
+Saving a query for future use:
+
+```bash
+sootty -f "example/example2.vcd" -s "rdata && wdata == const 22" -l 10 -w "rdata, wdata" -S "save.txt" -d
+```
+
+Reloading a saved query:
+
+```bash
+sootty -R "save.txt"
 ```
 
 How to run in python (using the repl):
@@ -55,6 +68,8 @@ image = Visualizer(Style.Dark).to_svg(wiretrace, start=0, length=8)
 # Display to stdout:
 image.display()
 ```
+
+You can view and modify the save files for the queries in the `~/.config/sootty/save` directory.
 
 ## Dependencies
 

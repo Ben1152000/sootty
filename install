@@ -1,2 +1,8 @@
 #! /bin/bash
 python3 -m pip install .
+if [ ! -d "$HOME/.config/sootty/save" ] 
+then
+    mkdir -p $HOME/.config/sootty/save
+else
+    echo "Found save files for sootty"
+fi
