@@ -118,7 +118,7 @@ def main():
             parser.print_usage()
             exit(0)
 
-    compile(
+    compile_query(
         args.filename,
         args.wires,
         args.breakpoints,
@@ -129,7 +129,7 @@ def main():
     )
 
 
-def compile(filename, wires, breakpoints, length, start, end, display):
+def compile_query(filename, wires, breakpoints, length, start, end, display):
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
@@ -190,8 +190,6 @@ def reload_query(
         cmd = dat[reload]["query"]
     args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
 
-    print(args)
-
     # Updating specifc flags for a relaoded query
 
     if filename is not None:
@@ -207,14 +205,12 @@ def reload_query(
     if end is not None:
         args.end = end
 
-    print(args)
-
     if length is not None and end is not None:
         raise SoottyError(
             f"Length and end flags should not be provided simultaneously."
         )
 
-    compile(
+    compile_query(
         args.filename,
         args.wires,
         args.breakpoints,

@@ -77,19 +77,19 @@ def query_build(name, wires, br, length, start, end, display):
     """
     cmd = ""
     if name:
-        cmd += ' -f "' + name + '"'
+        cmd += f' -f "{name}"'
     if wires:
-        cmd += ' -w "' + wires + '"'
+        cmd += f' -w "{wires}"'
     if br:
-        cmd += ' -b "' + br + '"'
+        cmd += f' -b "{br}"'
     if length:
-        cmd += ' -l "' + str(length) + '"'
+        cmd += f' -l "{str(length)}"'
     if start:
-        cmd += ' -s "' + start + '"'
+        cmd += f' -s "{start}"'
     if end:
-        cmd += ' -e "' + end + '"'
+        cmd += f' -e "{end}"'
     if display:
-        cmd += " -d"
+        cmd += f" -d"
     return cmd
 
 
