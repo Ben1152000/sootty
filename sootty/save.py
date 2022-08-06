@@ -11,32 +11,38 @@ def save_query(save, name, wires, br, length, start, end, display):
         """
         Memory check for the file
         """
-        with open(savefile, "r") as f:
+        with open(savefile, "r+") as f:
             lines = yaml.safe_load(f)
-        if save in lines:
-            pass
-        else:
+        if lines is None:
             with open(savefile, "w") as stream:
-                if len(lines) >= 500:
-                    print(
-                        "Saved query limit reached. Deleting least recent query to accommodate new query.",
-                        file=sys.stderr,
-                    )
-                    stream.truncate(0)
-                    for key in lines:
-                        stat = lines.pop(key)
-                        break
-                    if stat is None:  # No lines to delete/Error
-                        raise SoottyError("Error deleting least recent query.")
-                    yaml.dump(lines, stream, sort_keys=False, width=float("inf"))
+                query_write(
+                    savefile, stream, save, name, wires, br, length, start, end, display
+                )
+        else:
+            if save in lines:
+                pass
+            else:
+                    if len(lines) >= 500:
+                        print(
+                            "Saved query limit reached. Deleting least recent query to accommodate new query.",
+                            file=sys.stderr,
+                        )
+                        f.truncate(0)
+                        for key in lines:
+                            stat = lines.pop(key)
+                            break
+                        if stat is None:  # No lines to delete/Error
+                            raise SoottyError("Error deleting least recent query.")
+                        yaml.dump(lines, f, sort_keys=False, width=float("inf"))
 
-        with open(savefile, "a+") as stream:
-            query_write(
-                savefile, stream, save, name, wires, br, length, start, end, display
-            )
+            with open(savefile, "a+") as stream:
+                query_write(
+                    savefile, stream, save, name, wires, br, length, start, end, display
+                )
 
     else:
         # Creating new savefile as no savefiles found for sootty
+        print("Creating new savefile...")
         with open(savefile, "w") as stream:
             query_write(
                 savefile, stream, save, name, wires, br, length, start, end, display
@@ -46,29 +52,36 @@ def save_query(save, name, wires, br, length, start, end, display):
 def query_write(
     savefile_path, savefile, save, name, wires, br, length, start, end, display
 ):
-    with open(savefile_path, "r+") as stream:
+    with open(savefile_path, "r") as stream:
         lines = yaml.safe_load(stream)
-        if save in lines:
-            del lines[save]  # Deleting outdated query
-            overwrite_dict = {
-                save: {
-                    "query": query_build(name, wires, br, length, start, end, display),
-                    "date": str(datetime.datetime.now()),
-                }
-            }
-            lines.update(
-                overwrite_dict
-            )  # Essentially replacing the old query with the new dict
-            stream.truncate(0)
-            yaml.dump(
-                lines, savefile, sort_keys=False, width=float("inf")
-            )  # Dumping the overwritten query to the file, forcing no inline output
-        else:
+        if lines is None:
             savefile.write(save + ":\n")
             savefile.write("  query:")
             savefile.write(query_build(name, wires, br, length, start, end, display))
             savefile.write("\n")
             savefile.write("  date: " + str(datetime.datetime.now()) + "\n")
+        else:
+            if save in lines:
+                del lines[save]  # Deleting outdated query
+                overwrite_dict = {
+                    save: {
+                        "query": query_build(name, wires, br, length, start, end, display),
+                        "date": str(datetime.datetime.now()),
+                    }
+                }
+                lines.update(
+                    overwrite_dict
+                )  # Essentially replacing the old query with the new dict
+                savefile.truncate(0)
+                yaml.dump(
+                    lines, savefile, sort_keys=False, width=float("inf")
+                )  # Dumping the overwritten query to the file, forcing no inline output
+            else:
+                savefile.write(save + ":\n")
+                savefile.write("  query:")
+                savefile.write(query_build(name, wires, br, length, start, end, display))
+                savefile.write("\n")
+                savefile.write("  date: " + str(datetime.datetime.now()) + "\n")
 
 
 def query_build(name, wires, br, length, start, end, display):
