@@ -22,18 +22,18 @@ def save_query(save, name, wires, br, length, start, end, display):
             if save in lines:
                 pass
             else:
-                    if len(lines) >= 500:
-                        print(
-                            "Saved query limit reached. Deleting least recent query to accommodate new query.",
-                            file=sys.stderr,
-                        )
-                        f.truncate(0)
-                        for key in lines:
-                            stat = lines.pop(key)
-                            break
-                        if stat is None:  # No lines to delete/Error
-                            raise SoottyError("Error deleting least recent query.")
-                        yaml.dump(lines, f, sort_keys=False, width=float("inf"))
+                if len(lines) >= 500:
+                    print(
+                        "Saved query limit reached. Deleting least recent query to accommodate new query.",
+                        file=sys.stderr,
+                    )
+                    f.truncate(0)
+                    for key in lines:
+                        stat = lines.pop(key)
+                        break
+                    if stat is None:  # No lines to delete/Error
+                        raise SoottyError("Error deleting least recent query.")
+                    yaml.dump(lines, f, sort_keys=False, width=float("inf"))
 
             with open(savefile, "a+") as stream:
                 query_write(
@@ -65,7 +65,9 @@ def query_write(
                 del lines[save]  # Deleting outdated query
                 overwrite_dict = {
                     save: {
-                        "query": query_build(name, wires, br, length, start, end, display),
+                        "query": query_build(
+                            name, wires, br, length, start, end, display
+                        ),
                         "date": str(datetime.datetime.now()),
                     }
                 }
@@ -79,7 +81,9 @@ def query_write(
             else:
                 savefile.write(save + ":\n")
                 savefile.write("  query:")
-                savefile.write(query_build(name, wires, br, length, start, end, display))
+                savefile.write(
+                    query_build(name, wires, br, length, start, end, display)
+                )
                 savefile.write("\n")
                 savefile.write("  date: " + str(datetime.datetime.now()) + "\n")
 
