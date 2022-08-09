@@ -46,9 +46,7 @@ class ValueChange(SortedDict):
     def _to_bool(self):
         data = ValueChange(width=1)
         for key in self:
-            data[key] = (
-                None if self[key] == None else (int(bool(self[key])))
-            )
+            data[key] = None if self[key] == None else (int(bool(self[key])))
         return data
 
     def __invert__(self):
@@ -66,34 +64,46 @@ class ValueChange(SortedDict):
         return data
 
     def __not__(self):
-        return not(self.width)
+        return not (self.width)
 
-    def _binop(self, other, binop, width):
+    def _binop(self, other, binop, width, xz_flag=0):
         data = ValueChange(width=width)
         keys = SortedSet()
         keys.update(self.keys())
         keys.update(other.keys())
         values = [None, None, None]
         for key in keys:
+            reduced = None
             if key in self:
                 values[0] = self[key]
             if key in other:
                 values[1] = other[key]
-            reduced = (
-                None
-                if (values[0] is None or values[1] is None)
-                else binop(values[0], values[1])
-            )
+            if xz_flag == 1:
+                if values[0] == 0 or values[1] == 0:  # xz = 1 is logical and
+                    reduced = 0
+            if xz_flag == 2:  # xz = 2 is logical or
+                if values[0] == 1 or values[1] == 1:
+                    reduced = 1
+            if reduced is None:
+                reduced = (
+                    None
+                    if (
+                        (values[0] is None or values[1] is None)
+                        or (type(values[0]) == str)
+                        or (type(values[1]) == str)
+                    )
+                    else binop(values[0], values[1])
+                )
             if reduced != values[2]:
                 values[2] = reduced
                 data[key] = reduced
         return data
 
     def __and__(self, other):
-        return self._binop(other, lambda x, y: x & y, max(self.width, other.width))
+        return self._binop(other, lambda x, y: x & y, max(self.width, other.width), 1)
 
     def __or__(self, other):
-        return self._binop(other, lambda x, y: x | y, max(self.width, other.width))
+        return self._binop(other, lambda x, y: x | y, max(self.width, other.width), 2)
 
     def __xor__(self, other):
         return self._binop(other, lambda x, y: x ^ y, max(self.width, other.width))
