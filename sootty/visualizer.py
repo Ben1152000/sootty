@@ -118,6 +118,7 @@ class Visualizer:
             start=start,
             length=length,
             wires=wires,
+            vector_radix=vector_radix,
         )
         svg += result[0]
         index = result[1]
@@ -228,8 +229,6 @@ class Visualizer:
             }
         )
         for index in range(start, start + length):
-            if vector_radix != 10 and wire.width() != 1 and type(wire[index]) == int:  # VECTOR CHANGE DATA (no dup)
-                wire[index] = dec2anybase(wire[index], vector_radix, wire.width())
             svg += self._value_to_svg(
                 prev=wire[index - 1] if index > 0 else wire[index],
                 value=wire[index],
@@ -240,6 +239,7 @@ class Visualizer:
                 top=top,
                 length=length,
                 initial=(index == start),
+                vector_radix=vector_radix,
             )
         return svg
 
@@ -273,12 +273,17 @@ class Visualizer:
             else:
                 return Visualizer.ValueType.DATA
 
-    def _value_to_svg(self, prev, value, width, left, top, length, initial=False):
+    def _value_to_svg(self, prev, value, width, left, top, length, initial=False, vector_radix=10):
         # deduce types from wire width and value:
         prev_type = Visualizer.type_from_value(prev, width)
         value_type = Visualizer.type_from_value(value, width)
         is_transitioning = prev != value
 
+        if vector_radix != 10 and value_type == Visualizer.ValueType.DATA:  # VECTOR CHANGE DATA (no dup)
+            value = dec2anybase(value, vector_radix, width)
+            # if prev_type == Visualizer.ValueType.DATA:
+                # prev = dec2anybase(prev, vector_radix, width)
+        
         # The following code builds a list of svg objects depending on the
         # current and previous value of the wire.
         shapes = []
