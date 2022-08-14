@@ -203,3 +203,11 @@ class ValueChange(SortedDict):
             elif not self[key] and state:
                 state = False
         return data
+
+    def _axi(self):
+        data = ValueChange(width = self.width)
+        # axi arg 0 is start/end at axi transaction, arg 1 is ready signal, arg 2 is valid signal, arg 3 is clock signal
+        out = self.__and__(data[0], data[1])
+        out = self.__and__(out, data[2])
+
+        return out

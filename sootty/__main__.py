@@ -132,18 +132,18 @@ def compile(filename, wires, breakpoints, length, start, end, display):
     if end is not None and length is not None:
         raise Exception("Length and end flags should not be provided simultaneously.")
 
-    if axi is not None:
-        # axi arg 0 is start/end at axi transaction, arg 1 is ready signal, arg 2 is valid signal, arg 3 is clock signal
-        axi = list([name.strip() for name in axi.split(",")])
-        if axi[0] == "start":
-            start = "(" + axi[1] + " && " + axi[2] + " == const 1) && " + axi[3] + " == const 1"
-            start = start
-        elif axi[0] == "end":
-            end = "(" + axi[1] + " && " + axi[2] + " == const 1) && " + axi[3] + " == const 1"
-            print(end)
-            end = end
-        else:
-            raise Exception("Invalid AXI flag.")
+    #if axi is not None:
+    #    # axi arg 0 is start/end at axi transaction, arg 1 is ready signal, arg 2 is valid signal, arg 3 is clock signal
+    #    axi = list([name.strip() for name in axi.split(",")])
+    #    if axi[0] == "start":
+    #        start = "(" + axi[1] + " && " + axi[2] + " == const 1) && " + axi[3] + " == const 1"
+    #        start = start
+    #    elif axi[0] == "end":
+    #        end = "(" + axi[1] + " && " + axi[2] + " == const 1) && " + axi[3] + " == const 1"
+    #        print(end)
+    #        end = end
+    #    else:
+    #        raise Exception("Invalid AXI flag.")
     # Calculate window bounds.
     if end is not None:
         if start is not None:
