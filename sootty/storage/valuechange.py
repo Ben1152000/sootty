@@ -203,7 +203,21 @@ class ValueChange(SortedDict):
             elif not self[key] and state:
                 state = False
         return data
-
+    
+    def _edge(self):
+        data = ValueChange(width=1)
+        data[0] = 0
+        flag = False
+        for key in self:
+            if self[key]:
+                if flag is False:
+                    data[key] = 1
+                    flag = True
+                else:
+                    data[key] = 0
+                    flag = False
+        return data
+    
     def _axi(self):
         data = ValueChange(width = self.width)
         # axi arg 0 is start/end at axi transaction, arg 1 is ready signal, arg 2 is valid signal, arg 3 is clock signal

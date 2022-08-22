@@ -35,6 +35,7 @@ BEFORE : "before"
 NEXT : "next"
 PREV : "prev"
 ACC : "acc"
+EDGE : "edge"
 AXI : "axi"
  
 lop : LAND | LOR
@@ -57,7 +58,7 @@ mexp : wire | mexp mop wire
 
 uop : INV | NEG | NOT
 type : CONST | TIME
-top : FROM | AFTER | UNTIL | BEFORE
+top : FROM | AFTER | UNTIL | BEFORE | EDGE
 tsop : NEXT | PREV
 args: wire "," args | wire
 wire : NAME | "(" lexp ")" | uop wire | type NUM 
