@@ -1,6 +1,6 @@
 from math import ceil, log
 
-# Convert a decimal into any base (2-33)
+# Convert a decimal into any base (2 - 36)
 def dec2anybase(input, base, width):
     res = str()
     while (input > 0):

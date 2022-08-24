@@ -70,12 +70,8 @@ def main():
         type=int,
         default=10,
         dest="radix",
-        help="displayed radix of data numbers (2 - 33)",
+        help="displayed radix of data numbers (2 - 36)",
     )
-    args = parser.parse_args()
-
-    if args.radix < 2 or args.radix > 33:
-        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 33")
     parser.add_argument(
         "-S",
         "--save",
@@ -91,6 +87,9 @@ def main():
         help="Loads a saved query. Requires query name as string.",
     )
     args = parser.parse_args()
+
+    if args.radix < 2 or args.radix > 36:
+        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 36")
 
     if args.save is not None:
         if args.reload:
@@ -124,10 +123,11 @@ def main():
         args.start,
         args.end,
         args.display,
+        args.radix,
     )
 
 
-def compile(filename, wires, breakpoints, length, start, end, display):
+def compile(filename, wires, breakpoints, length, start, end, display, radix):
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
@@ -160,7 +160,7 @@ def compile(filename, wires, breakpoints, length, start, end, display):
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=args.radix,
+        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=radix,
     )
 
     if wires is not None and len(wires):
