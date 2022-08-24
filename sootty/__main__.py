@@ -153,11 +153,10 @@ def compile_query(filename, wires, breakpoints, length, start, end, display):
         length = length if length is not None else wiretrace.length() - start
 
     # Calculate breakpoints
-    breakpoints = None
     if breakpoints is not None:
         breakpoints = wiretrace.evaluate(breakpoints)
 
-    if wires:
+    if wires is not None:
         wires = set([name.strip() for name in wires.split(",")])
 
     # Convert wiretrace to graphical vector image.

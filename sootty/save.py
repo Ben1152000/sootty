@@ -91,7 +91,7 @@ def query_build(name, wires, br, length, start, end, display):
     if br:
         cmd += f' -b "{br}"'
     if length:
-        cmd += f' -l "{str(length)}"'
+        cmd += f' -l "{length}"'
     if start:
         cmd += f' -s "{start}"'
     if end:
