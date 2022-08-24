@@ -1,5 +1,6 @@
-import sys, argparse
+import argparse
 import os, shlex
+import yaml
 from sootty.exceptions import SoottyError
 from . import save as sv
 from .storage import WireTrace
@@ -11,6 +12,8 @@ def main():
     reload_path = os.getenv("HOME") + "/.config/sootty/save/"
     if os.path.isdir(reload_path) is False:
         os.makedirs(reload_path)
+
+    savefile = reload_path + "queries.yaml"
 
     parser = argparse.ArgumentParser(
         description="Converts .vcd wiretraces to .svg format."
@@ -97,14 +100,25 @@ def main():
         )
 
     if args.reload is not None:
-        reload_query(parser, args.reload, reload_path)
+        reload_query(
+            parser,
+            args.filename,
+            args.wires,
+            args.breakpoints,
+            args.length,
+            args.start,
+            args.end,
+            args.display,
+            args.reload,
+            savefile,
+        )
         exit(0)
     else:
         if args.filename is None:
             parser.print_usage()
             exit(0)
 
-    compile(
+    compile_query(
         args.filename,
         args.wires,
         args.breakpoints,
@@ -115,7 +129,7 @@ def main():
     )
 
 
-def compile(filename, wires, breakpoints, length, start, end, display):
+def compile_query(filename, wires, breakpoints, length, start, end, display):
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
@@ -139,11 +153,10 @@ def compile(filename, wires, breakpoints, length, start, end, display):
         length = length if length is not None else wiretrace.length() - start
 
     # Calculate breakpoints
-    breakpoints = None
     if breakpoints is not None:
         breakpoints = wiretrace.evaluate(breakpoints)
 
-    if wires:
+    if wires is not None:
         wires = set([name.strip() for name in wires.split(",")])
 
     # Convert wiretrace to graphical vector image.
@@ -163,13 +176,40 @@ def compile(filename, wires, breakpoints, length, start, end, display):
         print(image.source)
 
 
-def reload_query(parser, reload, reload_path):
-    reload = reload_path + reload
-    with open(reload, "r") as rf:
-        cmd = rf.readline()
+def reload_query(
+    parser, filename, wires, breakpoints, length, start, end, display, reload, savefile
+):
+    with open(savefile, "r") as stream:
+        try:
+            dat = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+            parser.print_usage()
+            exit(1)
+        cmd = dat[reload]["query"]
     args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
 
-    compile(
+    # Updating specifc flags for a relaoded query
+
+    if filename is not None:
+        args.filename = filename
+    if wires is not None:
+        args.wires = wires
+    if breakpoints is not None:
+        args.breakpoints = breakpoints
+    if length is not None:
+        args.length = length
+    if start is not None:
+        args.start = start
+    if end is not None:
+        args.end = end
+
+    if length is not None and end is not None:
+        raise SoottyError(
+            f"Length and end flags should not be provided simultaneously."
+        )
+
+    compile_query(
         args.filename,
         args.wires,
         args.breakpoints,
