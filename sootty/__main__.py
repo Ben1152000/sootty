@@ -57,7 +57,7 @@ def main():
         "-l", "--length", type=int, dest="length", help="number of cycles to display"
     )
     parser.add_argument(
-        "-d", "--display", action="store_true", help="display to command line"
+        "-o", "--output", action="store_true", help="print to stdout (does not display on terminal)"
     )
     parser.add_argument(
         "-w",
@@ -96,7 +96,7 @@ def main():
             args.length,
             args.start,
             args.end,
-            args.display,
+            args.output,
         )
 
     if args.reload is not None:
@@ -108,7 +108,7 @@ def main():
             args.length,
             args.start,
             args.end,
-            args.display,
+            args.output,
             args.reload,
             savefile,
         )
@@ -125,11 +125,11 @@ def main():
         args.length,
         args.start,
         args.end,
-        args.display,
+        args.output,
     )
 
 
-def compile_query(filename, wires, breakpoints, length, start, end, display):
+def compile_query(filename, wires, breakpoints, length, start, end, output):
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
@@ -169,7 +169,7 @@ def compile_query(filename, wires, breakpoints, length, start, end, display):
             f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
         )
 
-    if display:
+    if not output:
         image.display()
 
     else:
@@ -177,7 +177,7 @@ def compile_query(filename, wires, breakpoints, length, start, end, display):
 
 
 def reload_query(
-    parser, filename, wires, breakpoints, length, start, end, display, reload, savefile
+    parser, filename, wires, breakpoints, length, start, end, output, reload, savefile
 ):
     with open(savefile, "r") as stream:
         try:
@@ -186,7 +186,7 @@ def reload_query(
             print(exc)
             parser.print_usage()
             exit(1)
-        cmd = dat[reload]["query"]
+        cmd = dat[int(reload)]["query"]
     args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
 
     # Updating specifc flags for a relaoded query
@@ -216,7 +216,7 @@ def reload_query(
         args.length,
         args.start,
         args.end,
-        args.display,
+        args.output,
     )
 
 

@@ -4,7 +4,7 @@ import datetime
 import yaml
 
 
-def save_query(save, name, wires, br, length, start, end, display):
+def save_query(save, name, wires, br, length, start, end, output):
     savefile = os.getenv("HOME") + "/.config/sootty/save/queries.yaml"
 
     if is_save_file(savefile):
@@ -16,7 +16,7 @@ def save_query(save, name, wires, br, length, start, end, display):
         if lines is None:
             with open(savefile, "w") as stream:
                 query_write(
-                    savefile, stream, save, name, wires, br, length, start, end, display
+                    savefile, stream, save, name, wires, br, length, start, end, output
                 )
         else:
             if save in lines:
@@ -37,7 +37,7 @@ def save_query(save, name, wires, br, length, start, end, display):
 
             with open(savefile, "a+") as stream:
                 query_write(
-                    savefile, stream, save, name, wires, br, length, start, end, display
+                    savefile, stream, save, name, wires, br, length, start, end, output
                 )
 
     else:
@@ -45,19 +45,19 @@ def save_query(save, name, wires, br, length, start, end, display):
         print("Creating new savefile...")
         with open(savefile, "w") as stream:
             query_write(
-                savefile, stream, save, name, wires, br, length, start, end, display
+                savefile, stream, save, name, wires, br, length, start, end, output
             )
 
 
 def query_write(
-    savefile_path, savefile, save, name, wires, br, length, start, end, display
+    savefile_path, savefile, save, name, wires, br, length, start, end, output
 ):
     with open(savefile_path, "r") as stream:
         lines = yaml.safe_load(stream)
         if lines is None or (not save in lines):
             savefile.write(save + ":\n")
             savefile.write("  query:")
-            savefile.write(query_build(name, wires, br, length, start, end, display))
+            savefile.write(query_build(name, wires, br, length, start, end, output))
             savefile.write("\n")
             savefile.write("  date: " + str(datetime.datetime.now()) + "\n")
         else:
@@ -65,7 +65,7 @@ def query_write(
             overwrite_dict = {
                 save: {
                     "query": query_build(
-                        name, wires, br, length, start, end, display
+                        name, wires, br, length, start, end, output
                     ),
                     "date": str(datetime.datetime.now()),
                 }
@@ -79,7 +79,7 @@ def query_write(
             )  # Dumping the overwritten query to the file, forcing no inline output
 
 
-def query_build(name, wires, br, length, start, end, display):
+def query_build(name, wires, br, length, start, end, output):
     """
     Constructing the query using conditionals
     """
@@ -96,8 +96,8 @@ def query_build(name, wires, br, length, start, end, display):
         cmd += f' -s "{start}"'
     if end:
         cmd += f' -e "{end}"'
-    if display:
-        cmd += f" -d"
+    if output:
+        cmd += f" -o"
     return cmd
 
 
