@@ -57,7 +57,10 @@ def main():
         "-l", "--length", type=int, dest="length", help="number of cycles to display"
     )
     parser.add_argument(
-        "-o", "--output", action="store_true", help="print to stdout (does not display on terminal)"
+        "-o",
+        "--output",
+        action="store_true",
+        help="print to stdout (does not display on terminal)",
     )
     parser.add_argument(
         "-w",
@@ -88,16 +91,7 @@ def main():
             raise SoottyError(
                 f"Save and Reload flags should not be provided simultaneously."
             )
-        sv.save_query(
-            args.save,
-            args.filename,
-            args.wires,
-            args.breakpoints,
-            args.length,
-            args.start,
-            args.end,
-            args.output,
-        )
+        sv.save_query(args)
 
     if args.reload is not None:
         reload_query(
@@ -179,6 +173,11 @@ def compile_query(filename, wires, breakpoints, length, start, end, output):
 def reload_query(
     parser, filename, wires, breakpoints, length, start, end, output, reload, savefile
 ):
+    if not os.path.isfile(savefile):  # Check if file exists
+        with open(savefile, "w") as stream:
+            pass
+        raise SoottyError("NO FILE WHEN RELOADING QUERY")
+
     with open(savefile, "r") as stream:
         try:
             dat = yaml.safe_load(stream)

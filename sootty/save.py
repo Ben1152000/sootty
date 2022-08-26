@@ -4,8 +4,10 @@ import datetime
 import yaml
 
 
-def save_query(save, name, wires, br, length, start, end, output):
-    savefile = os.getenv("HOME") + "/.config/sootty/save/queries.yaml"
+savefile = os.getenv("HOME") + "/.config/sootty/save/queries.yaml"
+
+
+def save_query(args):
 
     if is_save_file(savefile):
         """
@@ -15,11 +17,9 @@ def save_query(save, name, wires, br, length, start, end, output):
             lines = yaml.safe_load(f)
         if lines is None:
             with open(savefile, "w") as stream:
-                query_write(
-                    savefile, stream, save, name, wires, br, length, start, end, output
-                )
+                query_write(savefile, stream, args)
         else:
-            if save in lines:
+            if args.save in lines:
                 pass
             else:
                 if len(lines) >= 500:
@@ -36,67 +36,57 @@ def save_query(save, name, wires, br, length, start, end, output):
                     yaml.dump(lines, f, sort_keys=False, width=float("inf"))
 
             with open(savefile, "a+") as stream:
-                query_write(
-                    savefile, stream, save, name, wires, br, length, start, end, output
-                )
+                query_write(savefile, stream, args)
 
     else:
         # Creating new savefile as no savefiles found for sootty
-        print("Creating new savefile...")
+        print("Creating new savefile...", file=sys.stderr)
         with open(savefile, "w") as stream:
-            query_write(
-                savefile, stream, save, name, wires, br, length, start, end, output
-            )
+            query_write(savefile, stream, args)
 
 
-def query_write(
-    savefile_path, savefile, save, name, wires, br, length, start, end, output
-):
+def query_write(savefile_path, savefile, args):
     with open(savefile_path, "r") as stream:
         lines = yaml.safe_load(stream)
-        if lines is None or (not save in lines):
-            savefile.write(save + ":\n")
+        if lines is None or (not args.save in lines):
+            savefile.write(args.save + ":\n")
             savefile.write("  query:")
-            savefile.write(query_build(name, wires, br, length, start, end, output))
+            savefile.write(query_build(args))
             savefile.write("\n")
             savefile.write("  date: " + str(datetime.datetime.now()) + "\n")
         else:
-            del lines[save]  # Deleting outdated query
+            del lines[args.save]  # Deleting outdated query
             overwrite_dict = {
-                save: {
-                    "query": query_build(
-                        name, wires, br, length, start, end, output
-                    ),
+                args.save: {
+                    "query": query_build(args),
                     "date": str(datetime.datetime.now()),
                 }
             }
-            lines.update(
-                overwrite_dict
-            )  # Essentially replacing the old query with the new dict
+            lines.update(overwrite_dict)  # Replace the old query with the new dict
             savefile.truncate(0)
             yaml.dump(
                 lines, savefile, sort_keys=False, width=float("inf")
             )  # Dumping the overwritten query to the file, forcing no inline output
 
 
-def query_build(name, wires, br, length, start, end, output):
+def query_build(args):
     """
     Constructing the query using conditionals
     """
     cmd = ""
-    if name:
-        cmd += f' -f "{name}"'
-    if wires:
-        cmd += f' -w "{wires}"'
-    if br:
-        cmd += f' -b "{br}"'
-    if length:
-        cmd += f' -l "{length}"'
-    if start:
-        cmd += f' -s "{start}"'
-    if end:
-        cmd += f' -e "{end}"'
-    if output:
+    if args.filename:
+        cmd += f' -f "{args.filename}"'
+    if args.wires:
+        cmd += f' -w "{args.wires}"'
+    if args.breakpoints:
+        cmd += f' -b "{args.breakpoints}"'
+    if args.length:
+        cmd += f' -l "{args.length}"'
+    if args.start:
+        cmd += f' -s "{args.start}"'
+    if args.end:
+        cmd += f' -e "{args.end}"'
+    if args.output:
         cmd += f" -o"
     return cmd
 
