@@ -33,7 +33,9 @@ def save_query(args):
                 "date": int(time.time() * 1000),
             }
         }
-    )
+    ) 
+
+    queries[args.save]["query"]["filename"] = os.getcwd() + "/" + queries[args.save]["query"]["filename"]
 
     if len(queries) > QUERYLIMIT:
         print(
