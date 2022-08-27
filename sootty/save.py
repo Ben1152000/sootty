@@ -9,7 +9,7 @@ SAVEFILE = PATH + "queries.yaml"
 QUERYLIMIT = 500
 
 
-def read_from_config_file():
+def get_queries():
     """Reads list of queries from yaml config file."""
     if os.path.isdir(PATH) is False:
         os.makedirs(PATH)
@@ -25,7 +25,7 @@ def read_from_config_file():
 
 def save_query(args):
     """Saves args to config file as a yaml dictionary object."""
-    queries = read_from_config_file()
+    queries = get_queries()
     queries.update(
         {
             args.save: {
