@@ -103,7 +103,7 @@ def main():
     filename, wires, breakpoints, length, start, end, output = parse_args()
 
     if filename is None:
-        raise SoottyError("Input file is required.")
+        raise SoottyError("Input file is required. See --help for more info.")
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
