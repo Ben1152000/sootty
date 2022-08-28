@@ -85,19 +85,17 @@ def parse_args():
         metavar="SAVENAME",
         help="Loads a saved query. Requires query name as string.",
     )
-    args = parser.parse_args()
 
+    args = parser.parse_args()
     if args.save is not None and args.reload is not None:
         raise SoottyError(
-            f"Save and Reload flags should not be provided simultaneously."
+            "Save and Reload flags should not be provided simultaneously."
         )
     if args.radix < 2 or args.radix > 36:
         raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 36")
-
     if args.save is not None:
         save_query(args)  # Save args to file
     if args.reload is not None:
-
         args = reload_query(parser, args)  # Load unassigned args from file
 
     return (
@@ -108,7 +106,7 @@ def parse_args():
         args.start,
         args.end,
         args.output,
-        args.radix
+        args.radix,
     )
 
 
@@ -148,7 +146,12 @@ def main():
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=radix,
+        wiretrace,
+        start=start,
+        length=length,
+        wires=wires,
+        breakpoints=breakpoints,
+        vector_radix=radix,
     )
 
     if wires is not None and len(wires):
@@ -161,6 +164,7 @@ def main():
 
     else:
         print(image.source)
+
 
 if __name__ == "__main__":
     main()
