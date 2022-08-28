@@ -282,7 +282,7 @@ class Visualizer:
         if vector_radix != 10 and value_type == Visualizer.ValueType.DATA:  # VECTOR CHANGE DATA (no dup)
             value = dec2anybase(value, vector_radix, width)
             # if prev_type == Visualizer.ValueType.DATA:
-                # prev = dec2anybase(prev, vector_radix, width)
+            #     prev = dec2anybase(prev, vector_radix, width)
         
         # The following code builds a list of svg objects depending on the
         # current and previous value of the wire.
