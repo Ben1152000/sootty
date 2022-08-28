@@ -63,6 +63,14 @@ def parse_args():
         dest="wires",
         help="comma-separated list of wires to view",
     )
+    arg_radix = parser.add_argument(
+        "-r",
+        "--radix",
+        type=int,
+        default=10,
+        dest="radix",
+        help="displayed radix of data numbers (2 - 36)",
+    )
     parser.add_argument(
         "-S",
         "--save",
@@ -83,9 +91,13 @@ def parse_args():
         raise SoottyError(
             f"Save and Reload flags should not be provided simultaneously."
         )
+    if args.radix < 2 or args.radix > 36:
+        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 36")
+        )
     if args.save is not None:
         save_query(args)  # Save args to file
     if args.reload is not None:
+
         args = reload_query(parser, args)  # Load unassigned args from file
 
     return (
@@ -96,6 +108,7 @@ def parse_args():
         args.start,
         args.end,
         args.output,
+        args.radix
     )
 
 
@@ -135,7 +148,7 @@ def main():
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints
+        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=radix,
     )
 
     if wires is not None and len(wires):
@@ -148,7 +161,6 @@ def main():
 
     else:
         print(image.source)
-
 
 if __name__ == "__main__":
     main()

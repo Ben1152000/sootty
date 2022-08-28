@@ -3,7 +3,6 @@ from sootty.exceptions import SoottyError
 import time
 import yaml
 
-
 PATH = os.getenv("HOME") + "/.config/sootty/save/"
 SAVEFILE = PATH + "queries.yaml"
 QUERYLIMIT = 500
@@ -47,9 +46,9 @@ def save_query(args):
         ]
         queries = dict(zip(keys, map(lambda key: queries[key], keys)))
 
+
     with open(SAVEFILE, "w") as stream:
         yaml.dump(queries, stream, width=float("inf"))
-
 
 def reload_query(parser, args):
     """Loads the saved query from the config file (throws exception if not found)."""

@@ -3,6 +3,7 @@ from enum import Enum
 
 from .display import VectorImage
 from .exceptions import SoottyInternalError
+from .utils import dec2anybase
 
 
 class Style:
@@ -65,16 +66,16 @@ class Visualizer:
         """Optionally pass in a style class to control how the visualizer looks."""
         self.style = style
 
-    def to_svg(self, wiretrace, start=0, length=None, wires=None, breakpoints=None):
+    def to_svg(self, wiretrace, start=0, length=None, wires=None, breakpoints=None, vector_radix=10):
         if length is None:
             length = wiretrace.length()
         """Converts the provided wiretrace object to a VectorImage object (svg)."""
         return VectorImage(
-            self._wiretrace_to_svg(wiretrace, start, length, wires, breakpoints)
+            self._wiretrace_to_svg(wiretrace, start, length, wires, breakpoints, vector_radix)
         )
 
-    def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None):
-        if wires and len(wires) == 0:  # include all wires if empty list is provided
+    def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None, vector_radix=10):
+        if wires and len(wires) == 0:  # include all wires if empty list provided
             wires = None
         width = (
             2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
@@ -117,6 +118,7 @@ class Visualizer:
             start=start,
             length=length,
             wires=wires,
+            vector_radix=vector_radix,
         )
         svg += result[0]
         index = result[1]
@@ -178,7 +180,7 @@ class Visualizer:
                 )
         return svg
 
-    def _wiregroup_to_svg(self, wiregroup, left, top, start, length, wires=None):
+    def _wiregroup_to_svg(self, wiregroup, left, top, start, length, wires=None, vector_radix=10):
         svg = ""
         index = 0
         for wire in wiregroup.wires:
@@ -192,6 +194,7 @@ class Visualizer:
                     + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
                     start=start,
                     length=length,
+                    vector_radix=vector_radix,
                 )
                 index += 1
         # recursively call function on nested wiregroups
@@ -203,12 +206,13 @@ class Visualizer:
                 start=start,
                 length=length,
                 wires=wires,
+                vector_radix=vector_radix,
             )
             svg += result[0]
             index += result[1]
         return svg, index
 
-    def _wire_to_svg(self, wire, left, top, start, length):
+    def _wire_to_svg(self, wire, left, top, start, length, vector_radix=10):
         svg = self._shape_to_svg(
             {
                 "name": "text",
@@ -235,6 +239,7 @@ class Visualizer:
                 top=top,
                 length=length,
                 initial=(index == start),
+                vector_radix=vector_radix,
             )
         return svg
 
@@ -268,12 +273,17 @@ class Visualizer:
             else:
                 return Visualizer.ValueType.DATA
 
-    def _value_to_svg(self, prev, value, width, left, top, length, initial=False):
+    def _value_to_svg(self, prev, value, width, left, top, length, initial=False, vector_radix=10):
         # deduce types from wire width and value:
         prev_type = Visualizer.type_from_value(prev, width)
         value_type = Visualizer.type_from_value(value, width)
         is_transitioning = prev != value
 
+        if vector_radix != 10 and value_type == Visualizer.ValueType.DATA:  # VECTOR CHANGE DATA (no dup)
+            value = dec2anybase(value, vector_radix, width)
+            # if prev_type == Visualizer.ValueType.DATA:
+            #     prev = dec2anybase(prev, vector_radix, width)
+        
         # The following code builds a list of svg objects depending on the
         # current and previous value of the wire.
         shapes = []
