@@ -93,7 +93,7 @@ def parse_args():
         )
     if args.radix < 2 or args.radix > 36:
         raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 36")
-        )
+
     if args.save is not None:
         save_query(args)  # Save args to file
     if args.reload is not None:
@@ -113,7 +113,7 @@ def parse_args():
 
 
 def main():
-    filename, wires, breakpoints, length, start, end, output = parse_args()
+    filename, wires, breakpoints, length, start, end, output, radix = parse_args()
 
     if filename is None:
         raise SoottyError("Input file is required. See --help for more info.")
