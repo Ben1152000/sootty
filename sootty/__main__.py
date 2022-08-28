@@ -67,6 +67,14 @@ def main():
         dest="wires",
         help="comma-separated list of wires to view",
     )
+    arg_radix = parser.add_argument(
+        "-r",
+        "--radix",
+        type=int,
+        default=10,
+        dest="radix",
+        help="displayed radix of data numbers (2 - 36)",
+    )
     parser.add_argument(
         "-S",
         "--save",
@@ -83,6 +91,9 @@ def main():
     )
     args = parser.parse_args()
 
+    if args.radix < 2 or args.radix > 36:
+        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 36")
+
     if args.save is not None:
         if args.reload:
             raise SoottyError(
@@ -97,6 +108,7 @@ def main():
             args.start,
             args.end,
             args.display,
+            args.radix,
         )
 
     if args.reload is not None:
@@ -109,6 +121,7 @@ def main():
             args.start,
             args.end,
             args.display,
+            args.radix,
             args.reload,
             savefile,
         )
@@ -126,10 +139,11 @@ def main():
         args.start,
         args.end,
         args.display,
+        args.radix,
     )
 
 
-def compile_query(filename, wires, breakpoints, length, start, end, display):
+def compile_query(filename, wires, breakpoints, length, start, end, display, radix):
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
@@ -161,7 +175,7 @@ def compile_query(filename, wires, breakpoints, length, start, end, display):
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints
+        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=radix,
     )
 
     if wires is not None and len(wires):
@@ -177,7 +191,7 @@ def compile_query(filename, wires, breakpoints, length, start, end, display):
 
 
 def reload_query(
-    parser, filename, wires, breakpoints, length, start, end, display, reload, savefile
+    parser, filename, wires, breakpoints, length, start, end, display, radix, reload, savefile
 ):
     with open(savefile, "r") as stream:
         try:
@@ -189,7 +203,7 @@ def reload_query(
         cmd = dat[reload]["query"]
     args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
 
-    # Updating specifc flags for a relaoded query
+    # Updating specific flags for a reloaded query
 
     if filename is not None:
         args.filename = filename
@@ -203,6 +217,10 @@ def reload_query(
         args.start = start
     if end is not None:
         args.end = end
+    if display is not None:
+        args.display = display
+    if radix is not None:
+        args.radix = radix
 
     if length is not None and end is not None:
         raise SoottyError(
@@ -217,6 +235,7 @@ def reload_query(
         args.start,
         args.end,
         args.display,
+        args.radix,
     )
 
 
