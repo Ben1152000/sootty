@@ -1,30 +1,23 @@
 import argparse
-import os, shlex
+import os
 import yaml
 from sootty.exceptions import SoottyError
-from . import save as sv
+from .save import save_query, reload_query
 from .storage import WireTrace
 from .visualizer import Visualizer
 
 
-def main():
-
-    reload_path = os.getenv("HOME") + "/.config/sootty/save/"
-    if os.path.isdir(reload_path) is False:
-        os.makedirs(reload_path)
-
-    savefile = reload_path + "queries.yaml"
-
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Converts .vcd or .evcd wiretraces to .svg format."
     )
     parser.add_argument(
-        "-f",
-        "--filename",
+        "filename",
+        nargs="?",
+        default=None,
         metavar="FILENAME",
-        required=False,
         type=str,
-        help="input .vcd file. Required unless reloading.",
+        help="input .vcd file (required unless -R flag is provided)",
     )
     parser.add_argument(
         "-s",
@@ -57,7 +50,10 @@ def main():
         "-l", "--length", type=int, dest="length", help="number of cycles to display"
     )
     parser.add_argument(
-        "-d", "--display", action="store_true", help="display to command line"
+        "-o",
+        "--output",
+        action="store_true",
+        help="print to stdout (does not display on terminal)",
     )
     parser.add_argument(
         "-w",
@@ -73,7 +69,7 @@ def main():
         type=int,
         default=10,
         dest="radix",
-        help="displayed radix of data numbers (2 - 33)",
+        help="displayed radix of data numbers (2 - 36)",
     )
     parser.add_argument(
         "-S",
@@ -89,66 +85,43 @@ def main():
         metavar="SAVENAME",
         help="Loads a saved query. Requires query name as string.",
     )
+
     args = parser.parse_args()
-
-    if args.radix < 2 or args.radix > 33:
-        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 33")
-        
+    if args.save is not None and args.reload is not None:
+        raise SoottyError(
+            "Save and Reload flags should not be provided simultaneously."
+        )
+    if args.radix < 2 or args.radix > 36:
+        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 36")
     if args.save is not None:
-        if args.reload:
-            raise SoottyError(
-                f"Save and Reload flags should not be provided simultaneously."
-            )
-        sv.save_query(
-            args.save,
-            args.filename,
-            args.wires,
-            args.breakpoints,
-            args.length,
-            args.start,
-            args.end,
-            args.display,
-        )
-
+        save_query(args)  # Save args to file
     if args.reload is not None:
-        reload_query(
-            parser,
-            args.filename,
-            args.wires,
-            args.breakpoints,
-            args.length,
-            args.start,
-            args.end,
-            args.display,
-            args.reload,
-            savefile,
-        )
-        exit(0)
-    else:
-        if args.filename is None:
-            parser.print_usage()
-            exit(0)
+        args = reload_query(parser, args)  # Load unassigned args from file
 
-    compile_query(
+    return (
         args.filename,
         args.wires,
         args.breakpoints,
         args.length,
         args.start,
         args.end,
-        args.display,
+        args.output,
         args.radix,
     )
 
 
-def compile_query(filename, wires, breakpoints, length, start, end, display, radix):
+def main():
+    filename, wires, breakpoints, length, start, end, output, radix = parse_args()
 
-    # Load vcd file into wiretrace object.
+    if filename is None:
+        raise SoottyError("Input file is required. See --help for more info.")
+
+    # Load vcd or evcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
 
     # Check that window bounds are well-defined.
     if end is not None and length is not None:
-        raise Exception("Length and end flags should not be provided simultaneously.")
+        raise SoottyError("Length and end flags should not be provided simultaneously.")
 
     # Calculate window bounds.
     if end is not None:
@@ -173,7 +146,12 @@ def compile_query(filename, wires, breakpoints, length, start, end, display, rad
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=radix,
+        wiretrace,
+        start=start,
+        length=length,
+        wires=wires,
+        breakpoints=breakpoints,
+        vector_radix=radix,
     )
 
     if wires is not None and len(wires):
@@ -181,56 +159,11 @@ def compile_query(filename, wires, breakpoints, length, start, end, display, rad
             f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
         )
 
-    if display:
-        image.display()
+    if not output:
+        image.display()  # Show image in terminal (works in kitty, iterm)
 
     else:
         print(image.source)
-
-
-def reload_query(
-    parser, filename, wires, breakpoints, length, start, end, display, reload, savefile
-):
-    with open(savefile, "r") as stream:
-        try:
-            dat = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
-            parser.print_usage()
-            exit(1)
-        cmd = dat[reload]["query"]
-    args = parser.parse_args(shlex.split(cmd))  # using shlex to parse string correctly
-
-    # Updating specifc flags for a relaoded query
-
-    if filename is not None:
-        args.filename = filename
-    if wires is not None:
-        args.wires = wires
-    if breakpoints is not None:
-        args.breakpoints = breakpoints
-    if length is not None:
-        args.length = length
-    if start is not None:
-        args.start = start
-    if end is not None:
-        args.end = end
-
-    if length is not None and end is not None:
-        raise SoottyError(
-            f"Length and end flags should not be provided simultaneously."
-        )
-
-    compile_query(
-        args.filename,
-        args.wires,
-        args.breakpoints,
-        args.length,
-        args.start,
-        args.end,
-        args.display,
-        args.radix,
-    )
 
 
 if __name__ == "__main__":

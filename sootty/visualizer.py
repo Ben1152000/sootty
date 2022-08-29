@@ -66,15 +66,27 @@ class Visualizer:
         """Optionally pass in a style class to control how the visualizer looks."""
         self.style = style
 
-    def to_svg(self, wiretrace, start=0, length=None, wires=None, breakpoints=None, vector_radix=10):
+    def to_svg(
+        self,
+        wiretrace,
+        start=0,
+        length=None,
+        wires=None,
+        breakpoints=None,
+        vector_radix=10,
+    ):
         if length is None:
             length = wiretrace.length()
         """Converts the provided wiretrace object to a VectorImage object (svg)."""
         return VectorImage(
-            self._wiretrace_to_svg(wiretrace, start, length, wires, breakpoints, vector_radix)
+            self._wiretrace_to_svg(
+                wiretrace, start, length, wires, breakpoints, vector_radix
+            )
         )
 
-    def _wiretrace_to_svg(self, wiretrace, start, length, wires=None, breakpoints=None, vector_radix=10):
+    def _wiretrace_to_svg(
+        self, wiretrace, start, length, wires=None, breakpoints=None, vector_radix=10
+    ):
         if wires and len(wires) == 0:  # include all wires if empty list provided
             wires = None
         width = (
@@ -180,7 +192,9 @@ class Visualizer:
                 )
         return svg
 
-    def _wiregroup_to_svg(self, wiregroup, left, top, start, length, wires=None, vector_radix=10):
+    def _wiregroup_to_svg(
+        self, wiregroup, left, top, start, length, wires=None, vector_radix=10
+    ):
         svg = ""
         index = 0
         for wire in wiregroup.wires:
@@ -273,17 +287,17 @@ class Visualizer:
             else:
                 return Visualizer.ValueType.DATA
 
-    def _value_to_svg(self, prev, value, width, left, top, length, initial=False, vector_radix=10):
+    def _value_to_svg(
+        self, prev, value, width, left, top, length, initial=False, vector_radix=10
+    ):
         # deduce types from wire width and value:
         prev_type = Visualizer.type_from_value(prev, width)
         value_type = Visualizer.type_from_value(value, width)
         is_transitioning = prev != value
 
-        if vector_radix != 10 and value_type == Visualizer.ValueType.DATA:  # VECTOR CHANGE DATA (no dup)
+        if vector_radix != 10 and value_type == Visualizer.ValueType.DATA:
             value = dec2anybase(value, vector_radix, width)
-            # if prev_type == Visualizer.ValueType.DATA:
-                # prev = dec2anybase(prev, vector_radix, width)
-        
+
         # The following code builds a list of svg objects depending on the
         # current and previous value of the wire.
         shapes = []
