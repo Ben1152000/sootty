@@ -5,6 +5,7 @@ from ..exceptions import *
 from ..limits import LimitExpression
 from .wiregroup import WireGroup
 from .wire import Wire
+from ..utils import evcd2vcd
 
 
 class WireTrace:
@@ -58,6 +59,9 @@ class WireTrace:
         stack = [this.root]  # store stack of current group for scoping
 
         with open(filename, "rb") as stream:
+            if filename.endswith(".evcd"):
+                stream = evcd2vcd(stream)
+
             tokens = tokenize(stream)
             for token in tokens:
                 if token.kind is TokenKind.COMMENT:

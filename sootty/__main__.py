@@ -13,7 +13,7 @@ def main():
         os.makedirs(reload_path)
 
     parser = argparse.ArgumentParser(
-        description="Converts .vcd wiretraces to .svg format."
+        description="Converts .vcd or .evcd wiretraces to .svg format."
     )
     parser.add_argument(
         "-f",
@@ -72,10 +72,6 @@ def main():
         dest="radix",
         help="displayed radix of data numbers (2 - 33)",
     )
-    args = parser.parse_args()
-
-    if args.radix < 2 or args.radix > 33:
-        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 33")
     parser.add_argument(
         "-S",
         "--save",
@@ -92,6 +88,9 @@ def main():
     )
     args = parser.parse_args()
 
+    if args.radix < 2 or args.radix > 33:
+        raise argparse.ArgumentError(arg_radix, "radix must be between 2 and 33")
+        
     if args.save is not None:
         if args.reload:
             raise SoottyError(
@@ -124,10 +123,11 @@ def main():
         args.start,
         args.end,
         args.display,
+        args.radix,
     )
 
 
-def compile(filename, wires, breakpoints, length, start, end, display):
+def compile(filename, wires, breakpoints, length, start, end, display, radix):
 
     # Load vcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
@@ -160,7 +160,7 @@ def compile(filename, wires, breakpoints, length, start, end, display):
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
-        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=args.radix,
+        wiretrace, start=start, length=length, wires=wires, breakpoints=breakpoints, vector_radix=radix,
     )
 
     if wires is not None and len(wires):
@@ -189,6 +189,7 @@ def reload_query(parser, reload, reload_path):
         args.start,
         args.end,
         args.display,
+        args.radix,
     )
 
 
