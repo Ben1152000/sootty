@@ -17,15 +17,18 @@ python3 -m pip install sootty
 To use, run:
 
 ```bash
-sootty -f "waveform.vcd" > image.svg
+sootty "waveform.vcd" > image.svg
 ```
 
-with a vcd file to produce an svg waveform diagram. Optional arguments include:
-- `-f | --filename FILENAME` Specify the vcd file name.
-- `-s | --start FORMULA` Specify the start of the window.
+with a Value Change Dump (VCD) or Extended VCD (EVCD) file to produce an svg waveform diagram. Optional arguments include:
+- `-b | --break FORMULA` Specify the formula for the points in time to be highlighted.
 - `-e | --end FORMULA` Specify the end of the window.
+- `-h | --help` Show the help message and exit.
 - `-l | --length N` Specify the number of ticks in the window (mutually exclusive with `-e`).
-- `-d` Display the output to the terminal (requires viu).
+- `-o | --output` Print to `stdout` rather than display on terminal.
+- `-r | --radix N` Display values in radix N (default 10).
+- `-R | --reload SAVENAME` Loads a saved query. Requires query name as string.
+- `-s | --start FORMULA` Specify the start of the window.
 - `-w | --wires LIST` Comma-separated list of wires to include in the visualization (default to all wires).
 
 ### Examples
@@ -33,19 +36,19 @@ with a vcd file to produce an svg waveform diagram. Optional arguments include:
 Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
 
 ```bash
-sootty -f "example/example3.vcd" -s "time 4" -e "acc clk == const 10" -w "clk,rst_n,pc,inst" -d
+sootty "example/example3.vcd" -s "time 4" -e "acc clk == const 10" -w "clk,rst_n,pc,inst"
 ```
 
 Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal to 20:
 
 ```bash
-sootty -f "example/example1.vcd" -l 8 -s "Data == const 20" -w "D1,Data" -d
+sootty "example/example1.vcd" -l 8 -s "Data == const 20" -w "D1,Data"
 ```
 
 Saving a query for future use:
 
 ```bash
-sootty -f "example/example2.vcd" -s "rdata && wdata == const 22" -l 10 -w "rdata, wdata" -S "save.txt" -d
+sootty "example/example2.vcd" -s "rdata && wdata == const 22" -l 10 -w "rdata, wdata" -S "save.txt"
 ```
 
 Reloading a saved query:
@@ -58,6 +61,7 @@ How to run in python (using the repl):
 
 ```python
 from sootty import WireTrace, Visualizer, Style
+from sootty.utils import evcd2vcd
 
 # Create wiretrace object from vcd file:
 wiretrace = WireTrace.from_vcd_file("example/example1.vcd")
@@ -67,6 +71,11 @@ image = Visualizer(Style.Dark).to_svg(wiretrace, start=0, length=8)
 
 # Display to stdout:
 image.display()
+
+# Manually convert EVCD file to VCD file:
+with open('myevcd.evcd', 'rb') as stream:
+    vcd = evcd2vcd(stream)
+    open('myvcd.vcd', 'wb').write(vcd.read())
 ```
 
 You can view and modify the save files for the queries in the `~/.config/sootty/save` directory.
