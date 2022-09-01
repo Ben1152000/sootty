@@ -264,10 +264,4 @@ def evcd2vcd(stream):
         pass
     vcd.seek(0)
     return BufferedReader(vcd)
-
-if __name__ == "__main__":
-    with open('example/example4.evcd', 'rb') as evcd_stream:
-        vcd_reader = evcd2vcd(evcd_stream)
-        with open('myvcd.vcd', 'wb') as vcd_stream:
-            vcd_stream.write(vcd_reader.read())
         
