@@ -67,7 +67,57 @@ def evcd_strcpy(src, direction):
 def evcd2vcd(stream):
     """
     Main function to convert EVCD input stream into VCD input stream.
+    
+    Syntax of extended VCD file (IEEE 1800-2017 §21.7.4):
+
+    value_change_dump_definitions ::= {declaration_command} {simulation_command}
+    declaration_command ::= declaration_keyword [command_text] $end
+    simulation_command ::=
+         simulation_keyword { value_change } $end
+       | $comment [comment_text] $end
+       | simulation_time
+       | value_change
+    declaration_keyword ::=
+         $comment | $date | $enddefinitions | $scope | $timescale | $upscope | $var | $vcdclose
+        | $version
+    command_text ::=
+         comment_text | close_text | date_section | scope_section | timescale_section | var_section
+       | version_section
+    simulation_keyword ::= $dumpports | $dumpportsoff | $dumpportson | $dumpportsall
+    simulation_time ::= #decimal_number
+    final_simulation_time ::= simulation_time
+    value_change ::= value identifier_code
+    value ::= pport_value 0_strength_component 1_strength_component
+    port_value ::= input_value | output_value | unknown_direction_value
+    input_value ::= D | U | N | Z | d | u
+    output_value ::= L | H | X | T | l | h
+    unknown_direction_value ::= 0 | 1 | ? | F | A | a | B | b | C | c | f
+    strength_component ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+    identifier_code ::= <{integer}
+    comment_text ::= {ASCII_character}
+    close_text ::= final_simulation_time
+    date_section ::= date_text
+    date_text :: = day month date time year
+    scope_section ::= scope_type scope_identifier
+    scope_type ::= module
+    timescale_section ::= number time_unit
+    number ::= 1 | 10 | 100
+    time_unit ::= fs | ps | ns | us | ms | s
+    var_section ::= var_type size identifier_code reference
+    var_type ::= port
+    size ::= 1 | vector_index
+    vector_index ::= [ msb_index : lsb_index ]
+    index ::= decimal_number
+    msb_index ::= index
+    lsb_index ::= index
+    reference ::= port_identifier
+    identifier ::= {printable_ASCII_character}
+    version_section ::= version_text
+    version_text ::= version_identifier {dumpports_command}
+    dumpports_command ::=
+         $dumpports (scope_identifier , string_literal | variable | expression )
     """
+    
     buf = stream.read()
     toks = buf.split()  # compared with re.split(b'\s+', buf), this automatically strip
     tokit = iter(toks)
@@ -133,12 +183,17 @@ def evcd2vcd(stream):
                                 else:
                                     raise SoottyError("EVCD syntax error: identifier_code re-declared")
                                 # var_ref containing "[" may effect: lbrack = var_ref.find(b'[')
-                                # Alternatively, '%d%s%s'.format(digit, str, str).encode() is more complicated since %s needs string rather than bytes
+                                # Alternatively, '%d%s%s'.format(digit, str, str).encode() is more complicated
+                                # because %s needs string rather than bytes
                                 # % operator to format bytes is from PEP 461
                                 vcd.write(b'$var wire %d %s %s_I $end\n' % (len, vcdid_unhash(hash * 2), var_ref))
                                 vcd.write(b'$var wire %d %s %s_O $end\n' % (len, vcdid_unhash(hash * 2 + 1), var_ref))
                             tok = next(tokit)
-                        elif var_type == b'event' or var_type == b'integer' or var_type == b'parameter' or var_type == b'real' or var_type == b'realtime' or var_type == b'reg' or var_type == b'supply0' or var_type == b'supply1' or var_type == b'time':
+                        elif var_type == b'event' or var_type == b'integer' or var_type == b'parameter' or var_type == b'real' \
+                                or var_type == b'realtime' or var_type == b'reg' or var_type == b'supply0' or var_type == b'supply1' \
+                                or var_type == b'time' or var_type == b'tri' or var_type == b'triand' or var_type == b'trior' \
+                                or var_type == b'trireg' or var_type == b'tri0' or var_type == b'tri1' or var_type == b'wand' \
+                                or var_type == b'wire' or var_type == b'wor':
                             raise SoottyError("EVCD syntax error: VCD var_type detected")
                         else:
                             raise SoottyError("EVCD syntax error: invalid var_type")
@@ -183,7 +238,8 @@ def evcd2vcd(stream):
                 else:
                     raise SoottyError("EVCD syntax error: undeclared identifier_code")
             # Ignores simulation keywords not in comments
-            elif tok == b'$dumpports' or tok == b'$dumpportson' or tok == b'$dumpportsoff' or tok == b'$dumpportsall' or tok == b'$dumpportsflush' or tok == b'$dumpportslimit' or tok == b'$vcdclose':
+            elif tok == b'$dumpports' or tok == b'$dumpportson' or tok == b'$dumpportsoff' or tok == b'$dumpportsall' \
+                    or tok == b'$dumpportsflush' or tok == b'$dumpportslimit' or tok == b'$vcdclose':
                 if not sim_kw:
                     sim_kw = True
                     continue
