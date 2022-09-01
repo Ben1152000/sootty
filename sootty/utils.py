@@ -145,12 +145,16 @@ def evcd2vcd(stream):
             elif tok == b'$scope':
                 # Simply check scope, var, and upscope outside can also parse, but cannot precisely throw exceptions
                 while tok == b'$scope':
-                    vcd.write(b'$scope ')
-                    body = next(tokit)
-                    while body != b'$end':
-                        vcd.write(body + b' ')
-                        body = next(tokit)
-                    vcd.write(b'$end\n')  # body + \n
+                    scope_type = next(tokit)
+                    if scope_type != b'module':
+                        if scope_type == b'begin' or scope_type == b'fork' or scope_type == b'function' or scope_type == b'task':
+                            raise SoottyError("EVCD syntax error: VCD scope_type detected")
+                        else:
+                            raise SoottyError("EVCD syntax error: invalid scope_type")
+                    scope_identifier = next(tokit)
+                    if next(tokit) != b'$end':
+                        raise SoottyError("EVCD syntax error: scope_identifier not followed by $end")
+                    vcd.write(b'$scope module ' + scope_identifier + b' $end\n')
                     scope_layer += 1
                     tok = next(tokit)
                     # Empty scope: innermost scope not followed by var_section
@@ -260,3 +264,10 @@ def evcd2vcd(stream):
         pass
     vcd.seek(0)
     return BufferedReader(vcd)
+
+if __name__ == "__main__":
+    with open('example/example4.evcd', 'rb') as evcd_stream:
+        vcd_reader = evcd2vcd(evcd_stream)
+        with open('myvcd.vcd', 'wb') as vcd_stream:
+            vcd_stream.write(vcd_reader.read())
+        
