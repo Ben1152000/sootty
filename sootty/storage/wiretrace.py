@@ -164,9 +164,7 @@ class WireTrace:
         return self.root.get_names()
 
     def _compute_wire(self, node):
-        """
-        Evaluate a limit expression
-        """
+        """Evaluate a limit expression"""
         if node.data == "wire":
             return self.find(node.children[0])
         elif node.data.type == "NEG":
@@ -188,13 +186,13 @@ class WireTrace:
         elif node.data.type == "LNOT":
             return self._compute_wire(node.children[0])._logical_not()
         elif node.data.type == "LAND":
-            return self._compute_wire(node.children[0])._logical_and(self._compute_wire(
-                node.children[1]
-            ))
+            return self._compute_wire(node.children[0])._logical_and(
+                self._compute_wire(node.children[1])
+            )
         elif node.data.type == "LOR":
-            return self._compute_wire(node.children[0])._logical_or(self._compute_wire(
-                node.children[1]
-            ))
+            return self._compute_wire(node.children[0])._logical_or(
+                self._compute_wire(node.children[1])
+            )
         elif node.data.type == "EQ":
             return self._compute_wire(node.children[0]) == self._compute_wire(
                 node.children[1]
@@ -257,7 +255,7 @@ class WireTrace:
             return Wire.const(int(node.children[0]))
         elif node.data.type == "TIME":
             return Wire.time(int(node.children[0]))
-    
+
     def compute_wire(self, expr: str):
         """Evaluate a limit expression"""
         return self._compute_wire(LimitExpression(expr).tree)
