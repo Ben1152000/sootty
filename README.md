@@ -17,7 +17,7 @@ python3 -m pip install sootty
 To use, run:
 
 ```bash
-sootty "waveform.vcd" > image.svg
+sootty "waveform.vcd" -o > image.svg
 ```
 
 with a Value Change Dump (VCD) or Extended VCD (EVCD) file to produce an svg waveform diagram. Optional arguments include:
@@ -73,9 +73,10 @@ image = Visualizer(Style.Dark).to_svg(wiretrace, start=0, length=8)
 image.display()
 
 # Manually convert EVCD file to VCD file:
-with open('myevcd.evcd', 'rb') as stream:
-    vcd = evcd2vcd(stream)
-    open('myvcd.vcd', 'wb').write(vcd.read())
+with open('myevcd.evcd', 'rb') as evcd_stream:
+    vcd_reader = evcd2vcd(evcd_stream)
+    with open('myvcd.vcd', 'wb') as vcd_stream:
+        vcd_stream.write(vcd_reader.read())
 ```
 
 You can view and modify the save files for the queries in the `~/.config/sootty/save` directory.

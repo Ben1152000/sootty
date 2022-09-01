@@ -3,6 +3,7 @@ from io import BytesIO, BufferedReader
 from sootty.exceptions import SoottyError
 
 # Convert a decimal into any base (2 - 36)
+# Trailing zeros are added according to input value bit size (width)
 def dec2anybase(input, base, width):
     res = str()
     while input > 0:
@@ -15,6 +16,7 @@ def dec2anybase(input, base, width):
  
     return res[::-1].zfill(ceil(log(2**width - 1, base)))
 
+# Hash identifier_code into integers
 def vcdid_hash(s):
     val = 0
     s_len = len(s)
@@ -24,10 +26,12 @@ def vcdid_hash(s):
 
     return val
 
+# Unhash identifier_code from integers
 def vcdid_unhash(value):
     buf = str()
     while value:
-        if vmod := value % 94:
+        vmod = value % 94
+        if vmod:
             buf += chr(vmod + 32)
         else:
             buf += '~'
@@ -35,6 +39,7 @@ def vcdid_unhash(value):
         value = int(value / 94)
     return buf.encode()  # bytes(buf, 'utf-8') or 'ascii'
 
+# Convert EVCD value changes into VCD input/output value changes according to direction
 def evcd_strcpy(src, direction):
     evcd = b"DUNZduLHXTlh01?FAaBbCcf"
     vcdi = b"01xz01zzzzzz01xz0011xxz"  # input direction = False
@@ -45,18 +50,14 @@ def evcd_strcpy(src, direction):
         for i in range(23):
             if evcd[i] == vc_bit:
                 value += vcd[i:i+1]
-                i -= 1
+                i -= 1  # choice of i can be alternative
                 break
         if i == 22:
             raise SoottyError("EVCD value error: value change is invalid")
     return value
 
+# Main function to convert EVCD input stream into VCD input stream
 def evcd2vcd(stream):
-    # while (line := stream.readline()):
-    #     if (line.startswith(b'$scope') or line.startswith(b'$upscope') or line.startswith(b'$endd') or line.startswith(b'$timescale') or line.startswith(b'$date') or line.startswith(b'$version')):
-    #         vcd_bytes.write(line)
-    #     elif (line.startswith(b'$var')):
-    #         toks = re.split(b' |\t|\n|\r\n', line)
     buf = stream.read()
     toks = buf.split()  # compared with re.split(b'\s+', buf), this automatically strip
     tokit = iter(toks)
@@ -68,9 +69,11 @@ def evcd2vcd(stream):
             # Basic formatter and syntax checker
             if tok == b'$comment' or tok == b'$date' or tok == b'$timescale' or tok == b'$version' or tok == b'$vcdclose':
                 vcd.write(tok + b' ')
-                while (body := next(tokit)) != b'$end':
+                body = next(tokit)
+                while body != b'$end':
                     vcd.write(body + b' ')
-                vcd.write(b'$end\n')  # b"body + b'\n'""
+                    body = next(tokit)
+                vcd.write(b'$end\n')  # body + \n
             elif tok == b'$enddefinitions':
                 if next(tokit) != b'$end':
                     raise SoottyError("EVCD syntax error: $enddefinitions not followed by $end")
@@ -79,12 +82,15 @@ def evcd2vcd(stream):
                     break
             elif tok == b'$scope':
                 vcd.write(b'$scope ')
-                while (body := next(tokit)) != b'$end':
+                body = next(tokit)
+                while body != b'$end':
                     vcd.write(body + b' ')
-                vcd.write(b'$end\n')
-                # if next(tokit) != b'$var':
-                #     raise SoottyError("EVCD syntax error: scope not followed by var_section")
-                while (tok := next(tokit)) == b'$var':
+                    body = next(tokit)
+                vcd.write(b'$end\n')  # body + \n
+                tok = next(tokit)
+                if tok != b'$var':
+                    raise SoottyError("EVCD syntax error: scope not followed by var_section")
+                while tok == b'$var':
                     var_type = next(tokit)
                     if var_type == b'port':
                         var_size = next(tokit)
@@ -107,8 +113,7 @@ def evcd2vcd(stream):
                         if next(tokit) != b'$end':
                             raise SoottyError("EVCD syntax error: var_section reference not followed by $end")
                         else:
-                            # node = jrb_find_int(id_code, hash)
-                            node = vcd_ids.get(hash)
+                            node = vcd_ids.get(hash)  # jrb_find_int(id_code, hash)
                             if node is None:
                                 vcd_ids[hash] = len
                             else:
@@ -118,6 +123,7 @@ def evcd2vcd(stream):
                             # % operator to format bytes is from PEP 461
                             vcd.write(b'$var wire %d %s %s_I $end\n' % (len, vcdid_unhash(hash * 2), var_ref))
                             vcd.write(b'$var wire %d %s %s_O $end\n' % (len, vcdid_unhash(hash * 2 + 1), var_ref))
+                        tok = next(tokit)
                     elif var_type == b'event' or var_type == b'integer' or var_type == b'parameter' or var_type == b'real' or var_type == b'realtime' or var_type == b'reg' or var_type == b'supply0' or var_type == b'supply1' or var_type == b'time':
                         raise SoottyError("EVCD syntax error: VCD var_type detected")
                     else:
