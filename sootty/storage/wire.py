@@ -96,6 +96,7 @@ class Wire:
     def _logical_or(self, other):
         wire = Wire(name="(" + self.name + " || " + other.name + ")")
         wire._data = self._data._to_bool().__or__(other._data._to_bool())
+        return wire
 
     def __eq__(self, other):
         wire = Wire(name="(" + self.name + " == " + other.name + ")")

@@ -1,4 +1,5 @@
 from lark import Lark, Tree, Token, Visitor
+import sys
 
 try:
     import importlib.resources as pkg_resources
@@ -69,3 +70,7 @@ class LimitExpression:
     def __init__(self, expression):
         parsed = parser.parse(expression)
         self.tree = Prune().visit(parsed)
+
+    def display(self):
+        """Display parse tree for debugging purposes."""
+        print(self.tree.pretty(), file=sys.stderr)
