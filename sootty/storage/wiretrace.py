@@ -165,6 +165,9 @@ class WireTrace:
         """
         if node.data == "wire":
             return self.find(node.children[0])
+        elif node.data == "args":
+            for child in node.children:
+                return self._compute_wire(child) 
         elif node.data.type == "NEG":
             return self._compute_wire(node.children[0]).__neg__()
         elif node.data.type == "INV":
@@ -253,6 +256,8 @@ class WireTrace:
             return Wire.const(int(node.children[0]))
         elif node.data.type == "TIME":
             return Wire.time(int(node.children[0]))
+        elif node.data.type == "AXI":
+            return self._compute_wire(node.children[0])._axi()
     
     def compute_wire(self, expr: str):
         """Evaluate a limit expression"""
