@@ -265,3 +265,12 @@ class WireTrace:
         ends = list(filter(lambda time: time > start, self.evaluate(end_expr)))
         end = ends[0] if len(ends) else self.length()
         return (start, end)
+    
+    def print(self, breakpoints: list):
+        """
+        Print a table of wires and their values.
+        """
+        wires = self.root.get_wires()
+        col_widths = [len(str(max(wires.keys())))]
+        for i in range(len(wires)):
+            col_widths.append(max(wires))

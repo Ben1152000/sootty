@@ -54,6 +54,12 @@ Reloading a saved query:
 sootty -R "save.txt"
 ```
 
+Add breakpoints at time 9, 11, and 17 - 18:
+
+```bash
+sootty "example/example1.vcd" -b "time 9 || time 11 || after time 16 && before time 18"
+```
+
 How to run in python (using the repl):
 
 ```python

@@ -161,6 +161,8 @@ def main():
 
     if not output:
         image.display()  # Show image in terminal (works in kitty, iterm)
+        if breakpoints is not None:
+            wiretrace.print(breakpoints)
 
     else:
         print(image.source)
