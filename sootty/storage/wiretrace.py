@@ -5,6 +5,7 @@ from ..exceptions import *
 from ..limits import LimitExpression
 from .wiregroup import WireGroup
 from .wire import Wire
+from ..utils import evcd2vcd
 
 
 class WireTrace:
@@ -16,40 +17,61 @@ class WireTrace:
         """
         Construct a WireTrace object from a parsed vcd file, using the pyvcd library.
 
-        Syntax of four-state VCD file (IEEE 1364-2005 §18.2.1):
+        Syntax of 4-state VCD file (IEEE 1800-2017 §21.7.2):
 
         value_change_dump_definitions ::=
-            { declaration_command }{ simulation_command }
+             { declaration_command }{ simulation_command }
         declaration_command ::=
-            declaration_keyword
-            [ command_text ]
-            $end
+             $comment [ comment_text ] $end
+           | $date [ date_text ] $end
+           | $enddefinitions $end
+           | $scope [ scope_type scope_identifier ] $end
+           | $timescale [ time_number time_unit ] $end
+           | $upscope $end
+           | $var [ var_type size identifier_code reference ] $end
+           | $version [ version_text system_task ] $end
         simulation_command ::=
-            simulation_keyword { value_change } $end
-            | $comment [ comment_text ] $end
-            | simulation_time
-            | value_change
-        declaration_keyword ::=
-            $comment | $date | $enddefinitions | $scope | $timescale | $upscope
-            | $var | $version
-        simulation_keyword ::=
-            $dumpall | $dumpoff | $dumpon | $dumpvars
-        simulation_time ::=
-            # decimal_number
+             $dumpall { value_change } $end
+           | $dumpoff { value_change } $end
+           | $dumpon { value_change } $end
+           | $dumpvars { value_change } $end
+           | $comment [ comment_text ] $end
+           | simulation_time
+           | value_change
+        scope_type ::=
+             begin
+           | fork
+           | function
+           | module
+           | task
+        time_number ::= 1 | 10 | 100
+        time_unit ::= s | ms | us | ns | ps | fs
+        var_type ::=
+            event | integer | parameter | real | realtime | reg | supply0 | supply1 | time
+           | tri | triand | trior | trireg | tri0 | tri1 | wand | wire | wor
+        simulation_time ::= # decimal_number
         value_change ::=
-            scalar_value_change
-            | vector_value_change
-        scalar_value_change ::=
-            value identifier_code
-        value ::=
-            0 | 1 | x | X | z | Z
+             scalar_value_change
+           | vector_value_change
+        scalar_value_change ::= value identifier_code
+        value ::= 0 | 1 | x | X | z | Z
         vector_value_change ::=
-            b binary_number identifier_code
-            | B binary_number identifier_code
-            | r real_number identifier_code
-            | R real_number identifier_code
-        identifier_code ::=
-            { ASCII character }
+             b binary_number identifier_code
+           | B binary_number identifier_code
+           | r real_number identifier_code
+           | R real_number identifier_code
+        identifier_code ::= { ASCII character }
+        size ::= decimal_number
+        reference ::=
+             identifier
+           | identifier [ bit_select_index ]
+           | identifier [ msb_index : lsb_index ]
+        index ::= decimal_number
+        scope_identifier ::= { ASCII character }
+        comment_text ::= { ASCII character }
+        date_text ::= { ASCII character }
+        version_text ::= { ASCII character }
+        system_task ::= ${ASCII character}
         """
 
         this = cls()
@@ -58,6 +80,9 @@ class WireTrace:
         stack = [this.root]  # store stack of current group for scoping
 
         with open(filename, "rb") as stream:
+            if filename.endswith(".evcd"):
+                stream = evcd2vcd(stream)
+
             tokens = tokenize(stream)
             for token in tokens:
                 if token.kind is TokenKind.COMMENT:

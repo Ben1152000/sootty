@@ -9,7 +9,7 @@ from .visualizer import Visualizer
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Converts .vcd wiretraces to .svg format."
+        description="Converts .vcd or .evcd wiretraces to .svg format."
     )
     parser.add_argument(
         "filename",
@@ -116,7 +116,7 @@ def main():
     if filename is None:
         raise SoottyError("Input file is required. See --help for more info.")
 
-    # Load vcd file into wiretrace object.
+    # Load vcd or evcd file into wiretrace object.
     wiretrace = WireTrace.from_vcd(filename)
 
     # Check that window bounds are well-defined.
