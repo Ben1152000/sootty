@@ -40,6 +40,7 @@ def parse_args():
     parser.add_argument(
         "-b",
         "--break",
+        required='--btable' in sys.argv,
         type=str,
         metavar="FORMULA",
         dest="breakpoints",
@@ -48,7 +49,6 @@ def parse_args():
     parser.add_argument(
         '--btable',
         action="store_true",
-        required='-b' in sys.argv,
         help="print a breakpoint table to stdout",
     )
     parser.add_argument(

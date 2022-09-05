@@ -22,6 +22,7 @@ sootty "waveform.vcd" -o > image.svg
 
 with a Value Change Dump (VCD) or Extended VCD (EVCD) file to produce an svg waveform diagram. Optional arguments include:
 - `-b | --break FORMULA` Specify the formula for the points in time to be highlighted.
+- `--btable` Print the wire value table at breakpoints to `stdout` (`-b` is required).
 - `-e | --end FORMULA` Specify the end of the window.
 - `-h | --help` Show the help message and exit.
 - `-l | --length N` Specify the number of ticks in the window (mutually exclusive with `-e`).
