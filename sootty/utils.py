@@ -14,7 +14,7 @@ def dec2anybase(input, base, width):
             res += chr(rem + ord("0"))
         else:
             res += chr(rem - 10 + ord("A"))
-        input = int(input / base)
+        input = input // base
  
     return res[::-1].zfill(ceil(log(2**width - 1, base)))
 
@@ -129,12 +129,12 @@ def evcd2vcd(stream):
         while True:
             # Basic formatter and syntax checker
             if tok == b'$comment' or tok == b'$date' or tok == b'$timescale' or tok == b'$version':
-                vcd.write(tok + b' ')
+                vcd.write(tok + b'\n   ')
                 body = next(tokit)
                 while body != b'$end':
-                    vcd.write(body + b' ')
+                    vcd.write(b' ' + body)
                     body = next(tokit)
-                vcd.write(b'$end\n')  # body + \n
+                vcd.write(b'\n$end\n')  # body + \n
                 tok = next(tokit)
             elif tok == b'$enddefinitions':
                 if next(tokit) != b'$end':

@@ -1,5 +1,3 @@
-import sys
-
 from ..exceptions import *
 from .wire import Wire
 
@@ -40,17 +38,27 @@ class WireGroup:
 
     def get_names(self):
         """Returns list of all wire names."""
-        names = dict()
-        names[self.name] = list()
-        for wire in self.wires:
-            names[self.name].append(wire.name)
-        for group in self.groups:
-            names[group.name] = group.get_names()
+        if self.groups:
+            names = dict()
+            if self.wires:
+                names[self.name] = list()
+                for wire in self.wires:
+                    names[self.name].append(wire.name)
+            for group in self.groups:
+                names[group.name] = group.get_names()
+        else:
+            names = list()
+            for wire in self.wires:
+                names.append(wire.name)
         return names
     
     def get_wires(self):
-        wires = dict()
-        wires[self.name] = self.wires
-        for group in self.groups:
-            wires[group.name] = group.get_wires()
+        if self.groups:
+            wires = dict()
+            if self.wires:
+                wires[self.name] = self.wires
+            for group in self.groups:
+                wires[group.name] = group.get_wires()
+        else:
+            wires = self.wires
         return wires

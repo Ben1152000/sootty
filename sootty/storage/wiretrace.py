@@ -1,4 +1,4 @@
-import json, sys
+import sys
 from vcd.reader import *
 
 from ..exceptions import *
@@ -291,11 +291,22 @@ class WireTrace:
         end = ends[0] if len(ends) else self.length()
         return (start, end)
     
-    def print(self, breakpoints: list):
+    def print_breakpoints(self, breakpoints: list):
         """
         Print a table of wires and their values.
         """
-        wires = self.root.get_wires()
-        col_widths = [len(str(max(wires.keys())))]
-        for i in range(len(wires)):
-            col_widths.append(max(wires))
+        def rec_print(wires):
+            for scope, sub in wires.items():
+                if type(sub) is dict:
+                    print("scope\t" + scope)
+                    rec_print(sub)
+                else:  # is list
+                    print("scope\t" + scope)
+                    for wire in sub:
+                        print(wire.name, end="\t")
+                        for breakpoint in breakpoints:
+                            print(str(wire._data.get(breakpoint)), end="\t")
+                        print()
+        
+        print("time", *breakpoints, sep="\t")
+        rec_print(self.root.get_wires())

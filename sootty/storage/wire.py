@@ -1,4 +1,3 @@
-import sys
 from itertools import compress, chain
 
 from ..exceptions import *

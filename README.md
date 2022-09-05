@@ -57,10 +57,10 @@ Reloading a saved query:
 sootty -R "save.txt"
 ```
 
-Add breakpoints at time 9, 11, and 17 - 18:
+Add breakpoints at time 9, 11, and 16 - 17 and print wire values at breakpoints:
 
 ```bash
-sootty "example/example1.vcd" -b "time 9 || time 11 || after time 16 && before time 18"
+sootty "example/example5.evcd" -b "time 9 || time 11 || after time 15 && before time 18" --btable
 ```
 
 How to run in python (using the repl):

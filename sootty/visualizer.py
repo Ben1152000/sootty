@@ -1,4 +1,4 @@
-import sys, html
+import html
 from enum import Enum
 
 from .display import VectorImage
