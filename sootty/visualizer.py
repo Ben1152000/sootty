@@ -27,7 +27,7 @@ class Style:
         LINE_COLOR_Z = "#FFFF00"
         LINE_COLOR_X = "#FF0000"
         LINE_COLOR_DATA = "#3DB8B8"
-        BREAKPOINT_COLOR_LIST = ["#2829FF", "#FF8314", "#48FF45", "#C200DD", "#26F0F6", "#FF3D3B", "#E1E1E1", "#1A9D1F", "#FDE12D"]
+        BREAKPOINT_COLOR_LIST = ["#FFFF00"]
         TEXT_COLOR = "#FFFFFF"
         BKGD_COLOR = "#000000"
         # wires going from 0 and 1 are two different colors, x variable is red rectangle, z variable is yellow
@@ -55,6 +55,9 @@ class Style:
         TEXT_COLOR = "#FFFFFF"
         # BKGD_COLOR = "#003000"
         BKGD_COLOR = "#2b5e2b"
+
+    class Colorful(Default):
+        BREAKPOINT_COLOR_LIST = ["#2829FF", "#FF8314", "#48FF45", "#C200DD", "#26F0F6", "#FF3D3B", "#E1E1E1", "#1A9D1F", "#FDE12D"]
 
     class Debug(Default):
         pass
