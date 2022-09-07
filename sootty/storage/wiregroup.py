@@ -40,9 +40,16 @@ class WireGroup:
 
     def get_names(self):
         """Returns list of all wire names."""
-        names = set()
-        for wire in self.wires:
-            names.add(wire.name)
-        for group in self.groups:
-            names.update(group.get_names())
+        if self.groups:
+            names = dict()
+            if self.wires:
+                names[self.name] = list()
+                for wire in self.wires:
+                    names[self.name].append(wire.name)
+            for group in self.groups:
+                names[group.name] = group.get_names()
+        else:
+            names = list()
+            for wire in self.wires:
+                names.append(wire.name)
         return names
