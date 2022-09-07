@@ -39,7 +39,7 @@ class WireGroup:
         raise SoottyError(f"Wire '{name}' does not exist.")
 
     def get_names(self):
-        """Returns list of all wire names."""
+        """Returns a dictionary of all wire names of this wiregroup or a list if this wiregroup is the innermost one."""
         if self.groups:
             names = dict()
             if self.wires:
