@@ -1,5 +1,3 @@
-import sys
-
 from ..exceptions import *
 from .wire import Wire
 
@@ -46,3 +44,15 @@ class WireGroup:
         for group in self.groups:
             names.update(group.get_names())
         return names
+    
+    def get_wires(self):
+        """Returns a dictionary of all wires of this wiregroup or a list if this wiregroup is the innermost one."""
+        if self.groups:
+            wires = dict()
+            if self.wires:
+                wires[self.name] = self.wires
+            for group in self.groups:
+                wires[group.name] = group.get_wires()
+        else:
+            wires = self.wires
+        return wires

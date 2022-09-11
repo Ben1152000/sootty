@@ -22,6 +22,7 @@ sootty "waveform.vcd" -o > image.svg
 
 with a Value Change Dump (VCD) or Extended VCD (EVCD) file to produce an svg waveform diagram. Optional arguments include:
 - `-b | --break FORMULA` Specify the formula for the points in time to be highlighted.
+- `--btable` Print the wire value table at breakpoints to `stdout` (`-b` is required).
 - `-e | --end FORMULA` Specify the end of the window.
 - `-h | --help` Show the help message and exit.
 - `-l | --length N` Specify the number of ticks in the window (mutually exclusive with `-e`).
@@ -55,6 +56,12 @@ Reloading a saved query:
 
 ```bash
 sootty -R "save.txt"
+```
+
+Add breakpoints at time 9, 11, and 16 - 17 and print wire values at breakpoints:
+
+```bash
+sootty "example/example5.evcd" -b "time 9 || time 11 || after time 15 && before time 18" --btable
 ```
 
 How to run in python (using the repl):
