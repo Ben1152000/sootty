@@ -75,13 +75,27 @@ class Visualizer:
         wiretrace,
         start=0,
         length=None,
-        wires=None,
+        wires="",
         breakpoints=None,
         vector_radix=10,
     ):
+        """
+        Converts the provided wiretrace object to a VectorImage object (svg).
+
+        :param wires: comma-seperated list of wires to include
+        """
         if length is None:
             length = wiretrace.length()
-        """Converts the provided wiretrace object to a VectorImage object (svg)."""
+
+        if wires:  # include all wires if empty list provided
+            wires = (
+                None
+                if len(wires) == 0
+                else set(
+                    map(lambda wire: wire.name, wiretrace.compute_wires(wires.strip()))
+                )
+            )
+
         return VectorImage(
             self._wiretrace_to_svg(
                 wiretrace, start, length, wires, breakpoints, vector_radix
@@ -91,11 +105,10 @@ class Visualizer:
     def _wiretrace_to_svg(
         self, wiretrace, start, length, wires=None, breakpoints=None, vector_radix=10
     ):
-        if wires and len(wires) == 0:  # include all wires if empty list provided
-            wires = None
         width = (
             2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
         )
+
         height = (
             2 * self.style.TOP_MARGIN
             - self.style.WIRE_MARGIN
