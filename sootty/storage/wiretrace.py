@@ -1,8 +1,8 @@
-import json, sys
+import sys
 from vcd.reader import *
 
 from ..exceptions import *
-from ..limits import LimitExpression
+from ..parser import parser
 from .wiregroup import WireGroup
 from .wire import Wire
 from ..utils import evcd2vcd
@@ -188,9 +188,12 @@ class WireTrace:
         """Evaluate a limit expression"""
         if node.data == "wire":
             return self.find(node.children[0])
-        elif node.data == "args":
-            for child in node.children:
-                return self._compute_wire(child) 
+        elif node.data == "call":
+            name = node.children[0]
+            args = list(map(self._compute_wire, node.children[1].children))
+            if name == "AXI":
+                return args[0]  # TODO: implement axi protocol
+            raise SoottyError(f'Function "{name}" does not exist.')
         elif node.data.type == "NEG":
             return self._compute_wire(node.children[0]).__neg__()
         elif node.data.type == "INV":
@@ -283,8 +286,12 @@ class WireTrace:
             return self._compute_wire(node.children[0])._axi()
 
     def compute_wire(self, expr: str):
-        """Evaluate a limit expression"""
-        return self._compute_wire(LimitExpression(expr).tree)
+        """Evaluate a limit expression to a wire."""
+        return self._compute_wire(parser.parse(expr))
+
+    def compute_wires(self, exprs: str):
+        """Evaluate comma-separated limit expressions as a list of wires."""
+        return list(map(self._compute_wire, parser.parse_list(exprs)))
 
     def evaluate(self, expr: str):
         return self.compute_wire(expr).times(self.length())
@@ -295,3 +302,24 @@ class WireTrace:
         ends = list(filter(lambda time: time > start, self.evaluate(end_expr)))
         end = ends[0] if len(ends) else self.length()
         return (start, end)
+
+    def print_breakpoints(self, breakpoints: list):
+        """
+        Print a table of wires and their values.
+        """
+
+        def rec_print(wires):
+            for scope, sub in wires.items():
+                if type(sub) is dict:
+                    print("scope\t" + scope)
+                    rec_print(sub)
+                else:  # is list
+                    print("scope\t" + scope)
+                    for wire in sub:
+                        print(wire.name, end="\t")
+                        for breakpoint in breakpoints:
+                            print(str(wire._data.get(breakpoint)), end="\t")
+                        print()
+
+        print("time", *breakpoints, sep="\t")
+        rec_print(self.root.get_wires())

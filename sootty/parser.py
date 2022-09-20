@@ -6,10 +6,8 @@ try:
 except ImportError:
     import importlib_resources as pkg_resources
 
-# Read and interpret grammar file.
-from . import static
-
-parser = Lark(pkg_resources.open_text(static, "grammar.lark").read())
+from . import static  # Read and interpret grammar file.
+from .exceptions import SoottyError
 
 
 class Prune(Visitor):
@@ -26,7 +24,7 @@ class Prune(Visitor):
                 tree.data = tree.children[1]
             tree.children = [tree.children[0], tree.children[2]]
 
-    def start(self, tree):
+    def expr(self, tree):
         self.binexp(tree)
 
     def lexp(self, tree):
@@ -64,13 +62,23 @@ class Prune(Visitor):
             tree.children = [tree.children[0], tree.children[2]]
 
 
-class LimitExpression:
-    """Parses an expression representing the limits of a wiretrace window."""
+class ExpressionParser(Lark):
+    """Implementation of Lark parser class for limit expressions."""
 
-    def __init__(self, expression):
-        parsed = parser.parse(expression)
-        self.tree = Prune().visit(parsed)
+    def __init__(self):
+        grammar = pkg_resources.open_text(static, "grammar.lark").read()
+        super().__init__(grammar, start=["expr", "exprs"])
 
-    def display(self):
-        """Display parse tree for debugging purposes."""
-        print(self.tree.pretty(), file=sys.stderr)
+    def parse(self, expression: str):
+        tree = super().parse(expression, start="expr")
+        tree = Prune().visit(tree)
+        # print(self.tree.pretty(), file=sys.stderr)
+        return tree
+
+    def parse_list(self, expressions: str):
+        tree = super().parse(expressions, start="exprs")
+        tree = Prune().visit(tree)
+        return tree.children
+
+
+parser = ExpressionParser()  # initialize global parser object

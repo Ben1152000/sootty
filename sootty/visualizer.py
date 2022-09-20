@@ -1,4 +1,4 @@
-import sys, html
+import html
 from enum import Enum
 
 from .display import VectorImage
@@ -27,10 +27,11 @@ class Style:
         LINE_COLOR_Z = "#FFFF00"
         LINE_COLOR_X = "#FF0000"
         LINE_COLOR_DATA = "#3DB8B8"
-        BREAKPOINT_COLOR = "#FFFF00"
+        BREAKPOINT_COLOR_LIST = ["#FFFF00"]
         TEXT_COLOR = "#FFFFFF"
         BKGD_COLOR = "#000000"
         # wires going from 0 and 1 are two different colors, x variable is red rectangle, z variable is yellow
+        # breakpoints: Han Purple, Orange, Erin, Electric Purple, Aqua, Tart Orange, Gainsboro, Slimy Green, Yellow Pantone
 
     class Dark(Default):
         pass
@@ -55,6 +56,9 @@ class Style:
         # BKGD_COLOR = "#003000"
         BKGD_COLOR = "#2b5e2b"
 
+    class Colorful(Default):
+        BREAKPOINT_COLOR_LIST = ["#2829FF", "#FF8314", "#48FF45", "#C200DD", "#26F0F6", "#FF3D3B", "#E1E1E1", "#1A9D1F", "#FDE12D"]
+
     class Debug(Default):
         pass
 
@@ -71,13 +75,27 @@ class Visualizer:
         wiretrace,
         start=0,
         length=None,
-        wires=None,
+        wires="",
         breakpoints=None,
         vector_radix=10,
     ):
+        """
+        Converts the provided wiretrace object to a VectorImage object (svg).
+
+        :param wires: comma-seperated list of wires to include
+        """
         if length is None:
             length = wiretrace.length()
-        """Converts the provided wiretrace object to a VectorImage object (svg)."""
+
+        if wires:  # include all wires if empty list provided
+            wires = (
+                None
+                if len(wires) == 0
+                else set(
+                    map(lambda wire: wire.name, wiretrace.compute_wires(wires.strip()))
+                )
+            )
+
         return VectorImage(
             self._wiretrace_to_svg(
                 wiretrace, start, length, wires, breakpoints, vector_radix
@@ -87,11 +105,10 @@ class Visualizer:
     def _wiretrace_to_svg(
         self, wiretrace, start, length, wires=None, breakpoints=None, vector_radix=10
     ):
-        if wires and len(wires) == 0:  # include all wires if empty list provided
-            wires = None
         width = (
             2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
         )
+
         height = (
             2 * self.style.TOP_MARGIN
             - self.style.WIRE_MARGIN
@@ -175,7 +192,7 @@ class Visualizer:
     def _breakpoints_to_svg(self, breakpoints, left, top, start, length, height):
         """Convert a list of breakpoint times to highlights on the svg."""
         svg = ""
-        for index in breakpoints:
+        for i, index in enumerate(breakpoints):
             if index >= start and index < start + length:
                 svg += self._shape_to_svg(
                     {
@@ -186,7 +203,7 @@ class Visualizer:
                         "y": top,
                         "width": (self.style.FULL_WIDTH / length),
                         "height": height,
-                        "fill": self.style.BREAKPOINT_COLOR,
+                        "fill": self.style.BREAKPOINT_COLOR_LIST[i % len(self.style.BREAKPOINT_COLOR_LIST)],
                         "fill-opacity": 0.4,
                     }
                 )

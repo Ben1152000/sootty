@@ -4,8 +4,7 @@
 %import common.DIGIT -> DIGIT
 %import common.NUMBER -> NUM
 
-start : lexp
-NAME: ("_"|LETTER) ("_"|LETTER|DIGIT)* ("." ("_"|LETTER|DIGIT)+)*
+NAME : ("_"|LETTER) ("_"|LETTER|DIGIT)* ("." ("_"|LETTER|DIGIT)+)*
 
 AND : "&"
 OR : "|"
@@ -35,7 +34,6 @@ BEFORE : "before"
 NEXT : "next"
 PREV : "prev"
 ACC : "acc"
-AXI : "axi"
 
 lop : LAND | LOR
 lexp : rexp | lexp lop rexp
@@ -59,6 +57,12 @@ uop : INV | NEG | NOT
 type : CONST | TIME
 top : FROM | AFTER | UNTIL | BEFORE
 tsop : NEXT | PREV
-args : wire "," args | wire
-wire : NAME | "(" lexp ")" | uop wire | type NUM 
-    | top wire | tsop wire | NUM tsop wire | ACC wire | AXI "(" args ")"
+
+call : NAME "(" args ")"
+args : wire ("," wire)*
+
+wire : NAME | "(" lexp ")" | uop wire | type NUM | top wire | tsop wire 
+    | NUM tsop wire | ACC wire | call
+
+expr : lexp
+exprs : expr ("," expr)*

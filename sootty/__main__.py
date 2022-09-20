@@ -1,7 +1,7 @@
 import argparse
-import os
-import yaml
-from sootty.exceptions import SoottyError
+import sys
+
+from .exceptions import SoottyError
 from .save import save_query, reload_query
 from .storage import WireTrace
 from .visualizer import Visualizer
@@ -17,7 +17,7 @@ def parse_args():
         default=None,
         metavar="FILENAME",
         type=str,
-        help="input .vcd file (required unless -R flag is provided)",
+        help="input .vcd or .evcd file (required unless -R flag is provided)",
     )
     parser.add_argument(
         "-s",
@@ -41,13 +41,23 @@ def parse_args():
     parser.add_argument(
         "-b",
         "--break",
+        required='--btable' in sys.argv,
         type=str,
         metavar="FORMULA",
         dest="breakpoints",
         help="formula for the points in time to be highlighted",
     )
     parser.add_argument(
-        "-l", "--length", type=int, dest="length", help="number of cycles to display"
+        '--btable',
+        action="store_true",
+        help="print a breakpoint table to stdout",
+    )
+    parser.add_argument(
+        "-l",
+        "--length",
+        type=int,
+        dest="length",
+        help="number of cycles to display",
     )
     parser.add_argument(
         "-o",
@@ -102,6 +112,7 @@ def parse_args():
         args.filename,
         args.wires,
         args.breakpoints,
+        args.btable,
         args.length,
         args.start,
         args.end,
@@ -111,7 +122,7 @@ def parse_args():
 
 
 def main():
-    filename, wires, breakpoints, length, start, end, output, radix = parse_args()
+    filename, wires, breakpoints, btable, length, start, end, output, radix = parse_args()
 
     if filename is None:
         raise SoottyError("Input file is required. See --help for more info.")
@@ -141,9 +152,6 @@ def main():
     if breakpoints is not None:
         breakpoints = wiretrace.evaluate(breakpoints)
 
-    if wires is not None:
-        wires = set([name.strip() for name in wires.split(",")])
-
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
         wiretrace,
@@ -154,17 +162,20 @@ def main():
         vector_radix=radix,
     )
 
-    if wires is not None and len(wires):
-        raise Exception(
-            f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
-        )
+    # This was the previous way of handling invalid wire names. It is no longer needed,
+    # but I'm keeping it here as a reminder to review the error handling system.
+    # if wires is not None and len(wires):
+    #     raise Exception(
+    #         f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
+    #     )
 
     if not output:
         image.display()  # Show image in terminal (works in kitty, iterm)
-
     else:
         print(image.source)
 
+    if btable:
+        wiretrace.print_breakpoints(breakpoints)
 
 if __name__ == "__main__":
     main()

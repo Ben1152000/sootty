@@ -1,4 +1,3 @@
-import sys
 from vcd.reader import *
 from itertools import islice
 from sortedcontainers import SortedDict, SortedList, SortedSet

@@ -1,4 +1,3 @@
-import sys
 from itertools import compress, chain
 
 from ..exceptions import *
@@ -191,4 +190,4 @@ class Wire:
     def _axi(self):
         wire = Wire(name="axi(" + self.name + ")")
         wire._data = self._data._axi()
-        return wire  
+        return wire

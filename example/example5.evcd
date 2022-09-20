@@ -1,0 +1,67 @@
+$comment
+	File created using the following command:
+		vcd file opt3.evcd -dumpports
+$end
+$date
+	Sat Sep  3 13:11:39 2022
+$end
+$version
+	dumpports ModelSim Version 10.2c
+$end
+$timescale
+	1ps
+$end
+
+$scope module testbench $end
+
+$scope module pe8 $end
+$var port [7:0] <0 req $end
+$var port 1 <1 en $end
+$upscope $end
+
+$scope module pe4 $end
+$var port [3:0] <2 req $end
+$var port 1 <3 en $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpports
+pU 0 6 <1
+pU 0 6 <3
+pDDDDDDDD 66666666 00000000 <0 
+pDDDD 6666 0000 <2 
+$end
+#5
+pUDDDDDDD 06666666 60000000 <0 
+pUDDD 0666 6000 <2 
+#10
+pDDDUDDDD 66606666 00060000 <0 
+pDUDD 6066 0600 <2 
+#15
+pDDDDDUDD 66666066 00000600 <0 
+pDDUD 6606 0060 <2 
+#20
+pDDDDDDDU 66666660 00000006 <0 
+pDDDU 6660 0006 <2 
+#25
+pDUDUDUDU 60606060 06060606 <0 
+pDUDU 6060 0606 <2 
+#30
+pDUUDDUUD 60066006 06600660 <0 
+pDUUD 6006 0660 <2 
+#35
+pUUUDUUUD 00060006 66606660 <0 
+pUUUD 0006 6660 <2 
+#40
+pUUUUUUUU 00000000 66666666 <0 
+pUUUU 0000 6666 <2 
+#45
+pD 6 0 <3
+pD 6 0 <1
+#50
+pDUUDDUUD 60066006 06600660 <0 
+pDUUD 6006 0660 <2 
+$vcdclose
+#55
+$end

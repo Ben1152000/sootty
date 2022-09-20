@@ -1,7 +1,8 @@
 import os, sys
-from sootty.exceptions import SoottyError
 import time
 import yaml
+
+from .exceptions import SoottyError
 
 PATH = os.getenv("HOME") + "/.config/sootty/save/"
 SAVEFILE = PATH + "queries.yaml"
