@@ -141,9 +141,6 @@ def main():
     if breakpoints is not None:
         breakpoints = wiretrace.evaluate(breakpoints)
 
-    if wires is not None:
-        wires = set([name.strip() for name in wires.split(",")])
-
     # Convert wiretrace to graphical vector image.
     image = Visualizer().to_svg(
         wiretrace,
@@ -154,10 +151,12 @@ def main():
         vector_radix=radix,
     )
 
-    if wires is not None and len(wires):
-        raise Exception(
-            f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
-        )
+    # This was the previous way of handling invalid wire names. It is no longer needed,
+    # but I'm keeping it here as a reminder to review the error handling system.
+    # if wires is not None and len(wires):
+    #     raise Exception(
+    #         f"Unknown wires {wires.__repr__()}\nThe following wires were detected in the wiretrace:\n{wiretrace.get_wire_names()}"
+    #     )
 
     if not output:
         image.display()  # Show image in terminal (works in kitty, iterm)

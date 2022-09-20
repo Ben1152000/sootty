@@ -2,7 +2,7 @@ import json, sys
 from vcd.reader import *
 
 from ..exceptions import *
-from ..limits import LimitExpression
+from ..parser import parser
 from .wiregroup import WireGroup
 from .wire import Wire
 from ..utils import evcd2vcd
@@ -188,6 +188,12 @@ class WireTrace:
         """Evaluate a limit expression"""
         if node.data == "wire":
             return self.find(node.children[0])
+        elif node.data == "call":
+            name = node.children[0]
+            args = list(map(self._compute_wire, node.children[1].children))
+            if name == "AXI":
+                return args[0]  # TODO: implement axi protocol
+            raise SoottyError(f'Function "{name}" does not exist.')
         elif node.data.type == "NEG":
             return self._compute_wire(node.children[0]).__neg__()
         elif node.data.type == "INV":
@@ -278,8 +284,12 @@ class WireTrace:
             return Wire.time(int(node.children[0]))
 
     def compute_wire(self, expr: str):
-        """Evaluate a limit expression"""
-        return self._compute_wire(LimitExpression(expr).tree)
+        """Evaluate a limit expression to a wire."""
+        return self._compute_wire(parser.parse(expr))
+
+    def compute_wires(self, exprs: str):
+        """Evaluate comma-separated limit expressions as a list of wires."""
+        return list(map(self._compute_wire, parser.parse_list(exprs)))
 
     def evaluate(self, expr: str):
         return self.compute_wire(expr).times(self.length())
