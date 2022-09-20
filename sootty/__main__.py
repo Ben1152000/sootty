@@ -1,6 +1,7 @@
 import argparse
 import sys
-from sootty.exceptions import SoottyError
+
+from .exceptions import SoottyError
 from .save import save_query, reload_query
 from .storage import WireTrace
 from .visualizer import Visualizer
