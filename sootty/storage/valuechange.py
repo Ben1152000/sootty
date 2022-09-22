@@ -202,17 +202,3 @@ class ValueChange(SortedDict):
             elif not self[key] and state:
                 state = False
         return data
-
-    def _axi(self):
-        data = ValueChange(width=0)
-        counter = 0
-        data[0] = counter
-        state = True
-        for key in self:
-            if self[key] and not state:
-                state = True
-                counter += 1
-                data[key] = counter
-            elif not self[key] and state:
-                state = False
-        return data

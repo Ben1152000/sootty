@@ -186,8 +186,3 @@ class Wire:
         wire = Wire(name="acc " + self.name)
         wire._data = self._data._acc()
         return wire
-
-    def _axi(self):
-        wire = Wire(name="axi(" + self.name + ")")
-        wire._data = self._data._axi()
-        return wire

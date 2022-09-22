@@ -192,7 +192,9 @@ class WireTrace:
             name = node.children[0]
             args = list(map(self._compute_wire, node.children[1].children))
             if name == "AXI":
-                return args[0]  # TODO: implement axi protocol
+                if args.__len__() != 2:
+                    raise SoottyError(f'Expected 2 arguments for called function "{name}".')
+                return args[0] & args[1]
             raise SoottyError(f'Function "{name}" does not exist.')
         elif node.data.type == "NEG":
             return self._compute_wire(node.children[0]).__neg__()
@@ -282,8 +284,6 @@ class WireTrace:
             return Wire.const(int(node.children[0]))
         elif node.data.type == "TIME":
             return Wire.time(int(node.children[0]))
-        elif node.data.type == "AXI":
-            return self._compute_wire(node.children[0])._axi()
 
     def compute_wire(self, expr: str):
         """Evaluate a limit expression to a wire."""
