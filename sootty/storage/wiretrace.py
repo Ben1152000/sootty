@@ -193,7 +193,9 @@ class WireTrace:
             args = list(map(self._compute_wire, node.children[1].children))
             if name == "AXI":
                 if args.__len__() != 2:
-                    raise SoottyError(f'Expected 2 arguments for called function "{name}".')
+                    raise SoottyError(
+                        f'Expected 2 arguments for called function "{name}".'
+                    )
                 return args[0] & args[1]
             raise SoottyError(f'Function "{name}" does not exist.')
         elif node.data.type == "NEG":

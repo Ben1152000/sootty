@@ -53,7 +53,7 @@ def save_query(args):
         yaml.dump(queries, stream, width=float("inf"))
 
 
-def reload_query(parser, args):
+def reload_query(args):
     """Loads the saved query from the config file (throws exception if not found)."""
     data = get_queries()
     if args.reload not in data:

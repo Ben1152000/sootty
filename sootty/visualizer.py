@@ -57,7 +57,17 @@ class Style:
         BKGD_COLOR = "#2b5e2b"
 
     class Colorful(Default):
-        BREAKPOINT_COLOR_LIST = ["#2829FF", "#FF8314", "#48FF45", "#C200DD", "#26F0F6", "#FF3D3B", "#E1E1E1", "#1A9D1F", "#FDE12D"]
+        BREAKPOINT_COLOR_LIST = [
+            "#2829FF",
+            "#FF8314",
+            "#48FF45",
+            "#C200DD",
+            "#26F0F6",
+            "#FF3D3B",
+            "#E1E1E1",
+            "#1A9D1F",
+            "#FDE12D",
+        ]
 
     class Debug(Default):
         pass
@@ -203,7 +213,9 @@ class Visualizer:
                         "y": top,
                         "width": (self.style.FULL_WIDTH / length),
                         "height": height,
-                        "fill": self.style.BREAKPOINT_COLOR_LIST[i % len(self.style.BREAKPOINT_COLOR_LIST)],
+                        "fill": self.style.BREAKPOINT_COLOR_LIST[
+                            i % len(self.style.BREAKPOINT_COLOR_LIST)
+                        ],
                         "fill-opacity": 0.4,
                     }
                 )
