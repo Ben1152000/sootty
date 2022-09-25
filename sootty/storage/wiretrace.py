@@ -191,7 +191,7 @@ class WireTrace:
         elif node.data == "call":
             name = node.children[0]
             args = list(map(self._compute_wire, node.children[1].children))
-            if name == "AXI":
+            if name == "AXI" or name == "axi":
                 if args.__len__() != 2:
                     raise SoottyError(
                         f'Expected 2 arguments for called function "{name}".'
