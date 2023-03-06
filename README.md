@@ -32,6 +32,27 @@ with a Value Change Dump (VCD) or Extended VCD (EVCD) file to produce an svg wav
 - `-s | --start FORMULA` Specify the start of the window.
 - `-w | --wires LIST` Comma-separated list of wires to include in the visualization (default to all wires).
 
+## Sootty Features
+- **VCD file support:** Sootty can read and display Value Change Dump (VCD) files, a common format for recording waveform data in digital circuit design and simulation.
+
+- **Selective signal display:** Users can choose to display all signals in a waveform or only specific signals of interest, reducing clutter and focusing on relevant data.
+
+- **Zooming and panning:** Sootty allows users to zoom in on a specific section of the waveform for more detailed analysis and to pan across the waveform to explore it.
+
+- **Color-coded signal groups:** Users can group signals together and assign them a unique color for easy identification and analysis.
+
+- **Breakpoints and signal value tables:** Sootty supports breakpoints, which are points in the waveform where the user can pause the display and examine the waveform in more detail. The signal value table at breakpoints displays the values of all signals at the time of the breakpoint.
+
+- **Search functionality:** Users can search for specific signals or values within the waveform.
+
+- **Multiple waveform formats:** Sootty can read VCD files as well as the more modern and feature-rich Fast Signal Trace (FST) format.
+
+- **Display formats:** Users can display waveform data in different formats, including binary, decimal, and hexadecimal.
+
+- **User-friendly interface:** Sootty is designed with a user-friendly interface that makes it easy to use and understand.
+
+Sootty is a powerful and flexible waveform viewer that can be used for a wide range of digital circuit design and simulation applications
+
 ### Examples
 
 Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
