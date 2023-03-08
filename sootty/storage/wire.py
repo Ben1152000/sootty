@@ -28,6 +28,8 @@ class Wire:
         else:
             return self._data.get(key)
 
+
+
     def __delitem__(self, key):
         del self._data[key]  # throws error if not present
 
