@@ -34,6 +34,8 @@ Optional arguments include:
 - `-R | --reload SAVENAME` Loads a saved query. Requires query name as string.
 - `--btable` Print the wire value table at breakpoints to `stdout` (`-b` is required).
 
+*Note: For more detailed information on the query language, check out [syntax.md](syntax.md)
+
 ### Examples
 
 Below are some more examples  that take advantage of some of the features sootty has to offer:
