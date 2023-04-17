@@ -1,70 +1,78 @@
 # Sootty
 
-The process of designing hardware requires a graphical interaction mechanism, so that the designer can view the results of their hardware and understand how it functions on a low level. Currently, this is done using waveform viewers like Verdi and GTKWave, which are standalone programs that allow the designer to view and interact with the waveform. However, the process of interaction can be slow, inefficient, and difficult to automate. The goal of this project is to create a waveform viewer that can be used within the command line, enabling the designer to quickly view and debug hardware designs. Sootty is a terminal-based waveform viewer which takes advantage of modern terminals’ capabilities to give a full graphical display of the users’ waveforms.
+Sootty is a graphical command-line tool for visualizing waveforms from hardware simulations, as a substitute for waveform visualizers like Verdi and GTKWave. It is designed with a focus on being lightweight and easy to use, and takes advantage of modern terminals’ capabilities to provide a clean graphical display. Current features include:
+- Customizable display style
+- Search and highlight events using a simple query language
 
-<img width="979" alt="Screen Shot 2022-03-02 at 12 46 28 PM" src="https://user-images.githubusercontent.com/8484201/156447563-438b9763-5429-46f0-aa3f-7b5ad9fe6609.png">
+And here's an example of how sootty can be used directly from the terminal:
 
-Example of Sootty used in the terminal.
+<img width="979" alt="Screenshot of sootty in action" src="https://raw.githubusercontent.com/Ben1152000/sootty/master/image/screenshot.png">
 
-## How to use
+## Getting Started
 
-This library can be installed from PyPi:
+1. Install sootty using pip:
 
 ```bash
-python3 -m pip install sootty
+pip install sootty
 ```
 
-To use, run:
+2. Display a waveform file to the terminal:
 
 ```bash
 sootty "waveform.vcd" -o > image.svg
 ```
 
-with a Value Change Dump (VCD) or Extended VCD (EVCD) file to produce an svg waveform diagram. Optional arguments include:
-- `-b | --break FORMULA` Specify the formula for the points in time to be highlighted.
-- `--btable` Print the wire value table at breakpoints to `stdout` (`-b` is required).
-- `-e | --end FORMULA` Specify the end of the window.
-- `-h | --help` Show the help message and exit.
-- `-l | --length N` Specify the number of ticks in the window (mutually exclusive with `-e`).
-- `-o | --output` Print to `stdout` rather than display on terminal.
-- `-r | --radix N` Display values in radix N (default 10).
-- `-R | --reload SAVENAME` Loads a saved query. Requires query name as string.
+Optional arguments include:
 - `-s | --start FORMULA` Specify the start of the window.
+- `-e | --end FORMULA` Specify the end of the window.
+- `-l | --length N` Specify the number of ticks in the window (mutually exclusive with `-e`).
+- `-o | --output` Print svg data to `stdout` rather than display on terminal.
 - `-w | --wires LIST` Comma-separated list of wires to include in the visualization (default to all wires).
+- `-b | --break FORMULA` Specify the formula for the points in time to be highlighted.
+- `-r | --radix N` Display values in radix N (default 10).
+- `-S | --save SAVENAME` Saves current query for future reuse.
+- `-R | --reload SAVENAME` Loads a saved query. Requires query name as string.
+- `--btable` Print the wire value table at breakpoints to `stdout` (`-b` is required).
+
+*Note: For more detailed information on the query language, check out [syntax.md](syntax.md)
 
 ### Examples
 
-Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
+Below are some more examples  that take advantage of some of the features sootty has to offer:
+
+- Display all wires starting at time 4 and ending at wire `clk`'s tenth tick:
 
 ```bash
 sootty "example/example3.vcd" -s "time 4" -e "acc clk == const 10" -w "clk,rst_n,pc,inst"
 ```
 
-Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal to 20:
+- Display wires `Data` and `D1` for 8 units of time starting when `Data` is equal to 20:
 
 ```bash
 sootty "example/example1.vcd" -l 8 -s "Data == const 20" -w "D1,Data"
 ```
 
-Saving a query for future use:
+- Saving a query for future use:
 
 ```bash
 sootty "example/example2.vcd" -s "rdata && wdata == const 22" -l 10 -w "rdata, wdata" -S "save.txt"
 ```
 
-Reloading a saved query:
+- Reloading a saved query:
 
 ```bash
 sootty -R "save.txt"
 ```
 
-Add breakpoints at time 9, 11, and 16 - 17 and print wire values at breakpoints:
+- Add breakpoints at time 9, 11, and 16 - 17 and print wire values at breakpoints:
 
 ```bash
 sootty "example/example5.evcd" -b "time 9 || time 11 || after time 15 && before time 18" --btable
 ```
 
-How to run in python (using the repl):
+### Running with python
+
+Sootty can also be run from within a python program:
 
 ```python
 from sootty import WireTrace, Visualizer, Style
@@ -86,14 +94,21 @@ with open('myevcd.evcd', 'rb') as evcd_stream:
         vcd_stream.write(vcd_reader.read())
 ```
 
-You can view and modify the save files for the queries in the `~/.config/sootty/save` directory.
+*Note: You can view and modify the save files for the queries in the `~/.config/sootty/save` directory.*
 
 ## Dependencies
+
+As of the current release, Sootty can only display images in certain terminals with builtin graphics support. This currently includes the following terminal replacements:
+
+- [iTerm2](https://iterm2.com/)
+- [kitty](https://sw.kovidgoyal.net/kitty/)
+
+The following external dependencies are also needed to properly display images within the terminal:
 
 - [viu](https://github.com/atanunq/viu)
 
   ```bash
-  # From source
+  # From source (rust package manager)
   cargo install viu
   # MacOS
   brew install viu
@@ -110,4 +125,4 @@ You can view and modify the save files for the queries in the `~/.config/sootty/
 
 ## Contributing
 
-If you are interested in contributing to this project, feel free to take a look at the existing issues. We also have a project idea listed for Google Summer of Code 2022 on the FOSSI website: https://www.fossi-foundation.org/gsoc22-ideas#enhancing-the-sootty-terminal-based-graphical-waveform-viewer
+If you are interested in contributing to this project, feel free to take a look at the existing issues and submit a PR. Beginners are encouraged to focus on issues with the "good first issue" label. This project has also been involved with Google Summer of Code through the [FOSSi Foundation](https://www.fossi-foundation.org/). Check out our project idea for GSoC '23: https://www.fossi-foundation.org/gsoc23-ideas#enhancing-the-sootty-terminal-based-graphical-waveform-viewer

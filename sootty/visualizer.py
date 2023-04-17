@@ -87,7 +87,7 @@ class Visualizer:
         if length is None:
             length = wiretrace.length()
 
-        if wires:  # include all wires if empty list provided
+        if wires is not None:  # include all wires if empty list provided
             wires = (
                 None
                 if len(wires) == 0
