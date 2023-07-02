@@ -31,5 +31,6 @@ setuptools.setup(
         'lark>=1',
         'pyvcd>=0.3',
         'sortedcontainers>=2.4'
+        'PyYAML>=6.0'
     ],
 )

@@ -1,0 +1,5 @@
+lark==1.1.5
+pyvcd==0.4.0
+PyYAML==6.0
+sootty==0.3
+sortedcontainers==2.4.0
