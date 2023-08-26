@@ -23,7 +23,12 @@ class Wire:
         self._data[key] = value
 
     def __getitem__(self, key):
-        return self._data.get(key)
+        if isinstance(key, slice):
+            return Wire(f"{self.name}[{key.start}:{key.stop}]", width=key.stop - key.start)._data.map(lambda x: x[key])
+        else:
+            return self._data.get(key)
+
+
 
     def __delitem__(self, key):
         del self._data[key]  # throws error if not present
@@ -138,9 +143,10 @@ class Wire:
         return wire
 
     def __add__(self, other):
-        wire = Wire(name="(" + self.name + " + " + other.name + ")")
-        wire._data = self._data.__add__(other._data)
-        return wire
+        if isinstance(other, Wire):
+            return Wire(f"{self.name} # {other.name}", width=self.width() + other.width())._data.map(lambda i: self._data[i] if i < self.width() else other._data[i - self.width()])
+        else:
+            raise TypeError("unsupported operand type(s) for +: 'MyClass' and '{}'".format(type(other).__name__))
 
     def __sub__(self, other):
         wire = Wire(name="(" + self.name + " - " + other.name + ")")
