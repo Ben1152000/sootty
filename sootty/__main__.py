@@ -122,6 +122,7 @@ def parse_args():
 
 
 def main():
+
     filename, wires, breakpoints, btable, length, start, end, output, radix = parse_args()
 
     if filename is None:

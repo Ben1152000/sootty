@@ -1,3 +1,5 @@
+import polars as pl
+
 from ..exceptions import *
 from .wire import Wire
 
@@ -8,8 +10,24 @@ class WireGroup:
         self.groups = []
         self.wires = []
 
+        self.groups_df = pl.DataFrame()
+        self.wires_df = pl.DataFrame([], schema={'name':pl.String, 'time': pl.Int64, 'value': pl.Int64, 'length': pl.Int64, 'width': pl.Int64})
+
     def add_wire(self, wire):
         self.wires.append(wire)
+
+        # this prints out null because time doesn't exist in the value change dictionary yet
+
+        # print(wire.__getitem__('time')) 
+        temp_wire_df = pl.DataFrame({
+            'name': wire.name,
+            'time': wire.__getitem__('time'),
+            'value': wire.__getitem__('value'),
+            'length': wire.length(),
+            'width': wire.width(),
+        })
+        self.wires_df.extend(temp_wire_df)
+        print(self.wires_df)
 
     def add_group(self, group):
         self.groups.append(group)
@@ -29,12 +47,17 @@ class WireGroup:
 
     def find(self, name: str):
         """Returns the first wire object with the given name, if it exists."""
+        """dataframe version"""
+        find_wires_df = self.wires_df.filter(pl.col("name") == name)
+        # print(find_wires_df)
+
         for wire in self.wires:
             if wire.name == name:
                 return wire
         for group in self.groups:
             return group.find(name)
         raise SoottyError(f"Wire '{name}' does not exist.")
+        
 
     def get_names(self):
         """Returns list of all wire names."""
