@@ -44,7 +44,7 @@ class WireGroup:
         for group in self.groups:
             names.update(group.get_names())
         return names
-    
+
     def get_wires(self):
         """Returns a dictionary of all wires of this wiregroup or a list if this wiregroup is the innermost one."""
         if self.groups:

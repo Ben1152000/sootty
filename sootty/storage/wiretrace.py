@@ -191,8 +191,12 @@ class WireTrace:
         elif node.data == "call":
             name = node.children[0]
             args = list(map(self._compute_wire, node.children[1].children))
-            if name == "AXI":
-                return args[0]  # TODO: implement axi protocol
+            if name == "AXI" or name == "axi":
+                if args.__len__() != 2:
+                    raise SoottyError(
+                        f'Expected 2 arguments for called function "{name}".'
+                    )
+                return args[0] & args[1]
             raise SoottyError(f'Function "{name}" does not exist.')
         elif node.data.type == "NEG":
             return self._compute_wire(node.children[0]).__neg__()
@@ -300,11 +304,12 @@ class WireTrace:
         ends = list(filter(lambda time: time > start, self.evaluate(end_expr)))
         end = ends[0] if len(ends) else self.length()
         return (start, end)
-    
+
     def print_breakpoints(self, breakpoints: list):
         """
         Print a table of wires and their values.
         """
+
         def rec_print(wires):
             for scope, sub in wires.items():
                 if type(sub) is dict:
@@ -317,6 +322,6 @@ class WireTrace:
                         for breakpoint in breakpoints:
                             print(str(wire._data.get(breakpoint)), end="\t")
                         print()
-        
+
         print("time", *breakpoints, sep="\t")
         rec_print(self.root.get_wires())

@@ -41,14 +41,14 @@ def parse_args():
     parser.add_argument(
         "-b",
         "--break",
-        required='--btable' in sys.argv,
+        required="--btable" in sys.argv,
         type=str,
         metavar="FORMULA",
         dest="breakpoints",
         help="formula for the points in time to be highlighted",
     )
     parser.add_argument(
-        '--btable',
+        "--btable",
         action="store_true",
         help="print a breakpoint table to stdout",
     )
@@ -122,7 +122,17 @@ def parse_args():
 
 
 def main():
-    filename, wires, breakpoints, btable, length, start, end, output, radix = parse_args()
+    (
+        filename,
+        wires,
+        breakpoints,
+        btable,
+        length,
+        start,
+        end,
+        output,
+        radix,
+    ) = parse_args()
 
     if filename is None:
         raise SoottyError("Input file is required. See --help for more info.")
@@ -176,6 +186,7 @@ def main():
 
     if btable:
         wiretrace.print_breakpoints(breakpoints)
+
 
 if __name__ == "__main__":
     main()
