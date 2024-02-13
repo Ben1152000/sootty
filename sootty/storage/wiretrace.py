@@ -273,9 +273,9 @@ class WireTrace:
         elif node.data.type == "BEFORE":
             return self._compute_wire(node.children[0])._before()
         elif node.data.type == "NEXT":
-            return self._compute_wire(node.children[0])._next()
+            return self._compute_wire(node.children[1])._next(int(node.children[0]))
         elif node.data.type == "PREV":
-            return self._compute_wire(node.children[0])._prev()
+            return self._compute_wire(node.children[1])._prev(int(node.children[0]))
         elif node.data.type == "ACC":
             return self._compute_wire(node.children[0])._acc()
         elif node.data.type == "CONST":
