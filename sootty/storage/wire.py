@@ -54,7 +54,6 @@ class Wire:
         wire = cls(name=f"t_{value}", width=1)
         wire[0] = 0
         wire[value] = 1
-        wire[value + 1] = 0
         return wire
 
     def __invert__(self):
