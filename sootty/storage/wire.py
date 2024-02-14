@@ -54,7 +54,6 @@ class Wire:
         wire = cls(name=f"t_{value}", width=1)
         wire[0] = 0
         wire[value] = 1
-        wire[value + 1] = 0
         return wire
 
     def __invert__(self):
@@ -173,12 +172,12 @@ class Wire:
         return wire
 
     def _next(self, amt=1):
-        wire = Wire(name="next " + self.name)
+        wire = Wire(name= str(amt) + " next " + self.name)
         wire._data = self._data._next(amt)
         return wire
 
     def _prev(self, amt=1):
-        wire = Wire(name="prev " + self.name)
+        wire = Wire(name= str(amt) + " prev " + self.name)
         wire._data = self._data._prev(amt)
         return wire
 

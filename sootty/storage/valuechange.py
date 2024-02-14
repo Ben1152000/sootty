@@ -176,17 +176,16 @@ class ValueChange(SortedDict):
                 break
         return data
 
-    def _next(self, amt=1):
+    def _next(self, shift = 1):
         data = ValueChange(width=self.width)
-        data[0] = self.get(amt)
-        for key in self.irange(minimum=amt):
-            data[key - 1] = self[key]
+        for key in self :
+            data[key + shift] = self[key]  
         return data
 
-    def _prev(self, amt=1):
+    def _prev(self, shift = 1):
         data = ValueChange(width=self.width)
         for key in self:
-            data[key + 1] = self[key]
+            data[key - shift] = self[key]
         return data
 
     def _acc(self):

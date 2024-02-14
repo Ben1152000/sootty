@@ -11,6 +11,7 @@ from ..utils import evcd2vcd
 class WireTrace:
     def __init__(self):
         self.root = WireGroup("__root__")
+        self.query_wires = []
 
     @classmethod
     def from_vcd(cls, filename):
@@ -178,6 +179,9 @@ class WireTrace:
 
     def find(self, name: str):
         """Returns the wire object with the given name, raises an error if not found."""
+        for wire in self.query_wires:
+            if wire.name == name:
+                return wire
         return self.root.find(name)
 
     def get_wire_names(self):
@@ -273,15 +277,19 @@ class WireTrace:
         elif node.data.type == "BEFORE":
             return self._compute_wire(node.children[0])._before()
         elif node.data.type == "NEXT":
-            return self._compute_wire(node.children[0])._next()
+            return self._compute_wire(node.children[1])._next(int(node.children[0]))
         elif node.data.type == "PREV":
-            return self._compute_wire(node.children[0])._prev()
+            return self._compute_wire(node.children[1])._prev(int(node.children[0]))
         elif node.data.type == "ACC":
             return self._compute_wire(node.children[0])._acc()
         elif node.data.type == "CONST":
-            return Wire.const(int(node.children[0]))
+            wire =  Wire.const(int(node.children[0]))
+            self.query_wires.append(wire)
+            return wire
         elif node.data.type == "TIME":
-            return Wire.time(int(node.children[0]))
+            wire =  Wire.time(int(node.children[0]))
+            self.query_wires.append(wire)
+            return wire
 
     def compute_wire(self, expr: str):
         """Evaluate a limit expression to a wire."""
