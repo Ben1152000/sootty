@@ -5,6 +5,7 @@ from .exceptions import SoottyError
 from .save import save_query, reload_query
 from .storage import WireTrace
 from .visualizer import Visualizer
+from .SoottyConfig import SoottyConfig
 
 
 def parse_args():
@@ -152,8 +153,11 @@ def main():
     if breakpoints is not None:
         breakpoints = wiretrace.evaluate(breakpoints)
 
+    # Create SoottyConfig instance and set user-defined time window
+    config = SoottyConfig(user_start=0, user_end=20)
+
     # Convert wiretrace to graphical vector image.
-    image = Visualizer().to_svg(
+    image = Visualizer(config=config).to_svg(
         wiretrace,
         start=start,
         length=length,
