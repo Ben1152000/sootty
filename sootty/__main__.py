@@ -154,7 +154,7 @@ def main():
         breakpoints = wiretrace.evaluate(breakpoints)
 
     # Create SoottyConfig instance and set user-defined time window
-    config = SoottyConfig(user_start=0, user_end=20)
+    config = SoottyConfig(user_start=10, user_end=20, visible_wires=['D1','Data'])
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer(config=config).to_svg(
