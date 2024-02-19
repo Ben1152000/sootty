@@ -33,6 +33,7 @@ Optional arguments include:
 - `-S | --save SAVENAME` Saves current query for future reuse.
 - `-R | --reload SAVENAME` Loads a saved query. Requires query name as string.
 - `--btable` Print the wire value table at breakpoints to `stdout` (`-b` is required).
+- `-p` User parameter for starting time window, ending time window and visible wires to generate waveform
 
 *Note: For more detailed information on the query language, check out [syntax.md](syntax.md)
 

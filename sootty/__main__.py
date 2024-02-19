@@ -6,6 +6,7 @@ from .save import save_query, reload_query
 from .storage import WireTrace
 from .visualizer import Visualizer
 from .SoottyConfig import SoottyConfig
+from .parser import parameter_query
 
 
 def parse_args():
@@ -97,6 +98,9 @@ def parse_args():
         help="Loads a saved query. Requires query name as string.",
     )
 
+    parser.add_argument('-p', '--parameters', help='Specify parameter query')
+
+
     args = parser.parse_args()
     if args.save is not None and args.reload is not None:
         raise SoottyError(
@@ -119,11 +123,12 @@ def parse_args():
         args.end,
         args.output,
         args.radix,
+        args.parameters
     )
 
 
 def main():
-    filename, wires, breakpoints, btable, length, start, end, output, radix = parse_args()
+    filename, wires, breakpoints, btable, length, start, end, output, radix, parameters = parse_args()
 
     if filename is None:
         raise SoottyError("Input file is required. See --help for more info.")
@@ -154,7 +159,10 @@ def main():
         breakpoints = wiretrace.evaluate(breakpoints)
 
     # Create SoottyConfig instance and set user-defined time window
-    config = SoottyConfig(user_start=10, user_end=20, visible_wires=['D1','Data'])
+    config = SoottyConfig(user_start=None, user_end=None, visible_wires=None)
+
+    if parameters:
+        config = parameter_query(parameters, config)
 
     # Convert wiretrace to graphical vector image.
     image = Visualizer(config=config).to_svg(
