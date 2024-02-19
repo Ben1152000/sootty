@@ -84,7 +84,7 @@ class ExpressionParser(Lark):
 parser = ExpressionParser()  # initialize global parser object
 
 def parameter_query(parameter_query, config):
-    key_values = parameter_query.replace('\n', '').split(',')
+    key_values = parameter_query.replace('\n', '').split(':')
 
     for key_value in key_values:
         if key_value[0][0] == 's': #start= 0 1 2 3 4 5
