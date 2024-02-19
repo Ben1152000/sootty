@@ -66,9 +66,10 @@ class Style:
 class Visualizer:
     """Converter for wiretrace objects to a svg vector image format."""
 
-    def __init__(self, style=Style.Default):
+    def __init__(self, style=Style.Default, config=None):
         """Optionally pass in a style class to control how the visualizer looks."""
         self.style = style
+        self.config = config or SoottyConfig()
 
     def to_svg(
         self,
@@ -105,15 +106,24 @@ class Visualizer:
     def _wiretrace_to_svg(
         self, wiretrace, start, length, wires=None, breakpoints=None, vector_radix=10
     ):
+        user_start, user_end = self.config.get_time_window()
+        visible_wires = self.config.get_visible_wires()
+
         width = (
             2 * self.style.LEFT_MARGIN + self.style.TEXT_WIDTH + self.style.FULL_WIDTH
         )
+
+        # Check if 'wires' is not None and not an integer
+        if wires is not None and not isinstance(wires, int):
+            num_wires = len(wires)
+        else:
+            num_wires = wiretrace.num_wires()
 
         height = (
             2 * self.style.TOP_MARGIN
             - self.style.WIRE_MARGIN
             + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)
-            * (1 + (len(wires) if wires else wiretrace.num_wires()))
+            * (1 + (num_wires if wires else wiretrace.num_wires()))
         )
 
         svg = (
@@ -121,11 +131,12 @@ class Visualizer:
             f'<rect x="0" y="0" width="{width}" height="{height}" fill="{self.style.BKGD_COLOR}" />'
         )
 
+        # Pass user_start and user_end to relevant functions
         svg += self._timestamps_to_svg(
             left=self.style.LEFT_MARGIN + self.style.TEXT_WIDTH,
             top=self.style.TOP_MARGIN,
             start=start,
-            length=length,
+            length=length
         )
 
         if not breakpoints:
@@ -136,7 +147,7 @@ class Visualizer:
             top=self.style.TOP_MARGIN,
             start=start,
             length=length,
-            height=height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN,
+            height=height - 2 * self.style.TOP_MARGIN + self.style.WIRE_MARGIN
         )
 
         # Add the root wiregroup to the image.
@@ -151,89 +162,101 @@ class Visualizer:
         )
         svg += result[0]
         index = result[1]
-
+    
         # Add each composite wire to the image.
         if wires is not None:
             for wire in wires:
-                svg += self._wire_to_svg(
-                    wiretrace.compute_wire(wire),
-                    left=self.style.LEFT_MARGIN,
-                    top=self.style.TOP_MARGIN
-                    + self.style.WIRE_HEIGHT
-                    + self.style.WIRE_MARGIN
-                    + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
-                    start=start,
-                    length=length,
-                )
-                index += 1
+                # Check if the wire is in the visible_wires list
+                if wire in visible_wires:
+                    svg += self._wire_to_svg(
+                        wiretrace.compute_wire(wire),
+                        left=self.style.LEFT_MARGIN,
+                        top=self.style.TOP_MARGIN
+                        + self.style.WIRE_HEIGHT
+                        + self.style.WIRE_MARGIN
+                        + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                        start=start,
+                        length=length,
+                    )
+                    index += 1
             wires.clear()  # TODO: fix temporary solution for catching exceptions
-
+    
         svg += "</svg>"
         return svg
+    
 
     def _timestamps_to_svg(self, left, top, start, length):
+        user_start, user_end = self.config.get_time_window()
+
         svg = ""
-        for index in range(start, start + length, ((length - 1) // 32) + 1):
-            svg += self._shape_to_svg(
-                {
-                    "name": "text",
-                    "x": left
-                    + (index - start + 1 / 2) * (self.style.FULL_WIDTH / length),
-                    "y": top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
-                    "class": "small",
-                    "fill": self.style.TEXT_COLOR,
-                    "text-anchor": "middle",
-                    "font-family": "monospace",
-                    "content": index,
-                }
-            )
+        for index in range(start, start + length):
+            if (user_start is None or index >= user_start) and (user_end is None or index <= user_end):
+                svg += self._shape_to_svg(
+                    {
+                        "name": "text",
+                        "x": left
+                        + (index - start + 1 / 2) * (self.style.FULL_WIDTH / length),
+                        "y": top + (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN) / 2,
+                        "class": "small",
+                        "fill": self.style.TEXT_COLOR,
+                        "text-anchor": "middle",
+                        "font-family": "monospace",
+                        "content": index,
+                    }
+                )
         return svg
 
+
     def _breakpoints_to_svg(self, breakpoints, left, top, start, length, height):
+        user_start, user_end = self.config.get_time_window()
         """Convert a list of breakpoint times to highlights on the svg."""
         svg = ""
         for i, index in enumerate(breakpoints):
-            if index >= start and index < start + length:
-                svg += self._shape_to_svg(
-                    {
-                        "name": "rect",
-                        "x": left
-                        + (index - start) * (self.style.FULL_WIDTH / length)
-                        + self.style.TRANS_START,
-                        "y": top,
-                        "width": (self.style.FULL_WIDTH / length),
-                        "height": height,
-                        "fill": self.style.BREAKPOINT_COLOR_LIST[i % len(self.style.BREAKPOINT_COLOR_LIST)],
-                        "fill-opacity": 0.4,
-                    }
-                )
+            if (user_start is None or index >= user_start) and (user_end is None or index <= user_end):
+                if index >= start and index < start + length:
+                    svg += self._shape_to_svg(
+                        {
+                            "name": "rect",
+                            "x": left + (index - start) * (self.style.FULL_WIDTH / length) + self.style.TRANS_START,
+                            "y": top,
+                            "width": (self.style.FULL_WIDTH / length),
+                            "height": height,
+                            "fill": self.style.BREAKPOINT_COLOR_LIST[i % len(self.style.BREAKPOINT_COLOR_LIST)],
+                            "fill-opacity": 0.4,
+                        }
+                    )
         return svg
 
     def _wiregroup_to_svg(
         self, wiregroup, left, top, start, length, wires=None, vector_radix=10
     ):
+        user_start, user_end = self.config.get_time_window()
+        visible_wires = self.config.get_visible_wires()
+
         svg = ""
         index = 0
         for wire in wiregroup.wires:
-            if wires == None or wire.name in wires:
-                if wires:  # ensure only one copy of the wire is included
-                    wires.remove(wire.name)
-                svg += self._wire_to_svg(
-                    wire,
-                    left=left,
-                    top=top
-                    + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
-                    start=start,
-                    length=length,
-                    vector_radix=vector_radix,
-                )
-                index += 1
+            if wires is None or wire.name in wires:
+                # Check if the wire is in the visible_wires list
+                if wires is None or wire.name in visible_wires:
+                    if wires:  # ensure only one copy of the wire is included
+                        wires.remove(wire.name)
+                    svg += self._wire_to_svg(
+                        wire,
+                        left=left,
+                        top=top
+                        + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                        start=start,
+                        length=length,
+                        vector_radix=vector_radix,
+                    )
+                    index += 1
         # recursively call function on nested wiregroups
         for group in wiregroup.groups:
             result = self._wiregroup_to_svg(
                 group,
-                left=left,
-                top=top + (index * (self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN)),
+                left=self.style.LEFT_MARGIN,
+                top=self.style.TOP_MARGIN + self.style.WIRE_HEIGHT + self.style.WIRE_MARGIN,
                 start=start,
                 length=length,
                 wires=wires,
@@ -244,35 +267,73 @@ class Visualizer:
         return svg, index
 
     def _wire_to_svg(self, wire, left, top, start, length, vector_radix=10):
-        svg = self._shape_to_svg(
-            {
-                "name": "text",
-                "x": left,
-                "y": top + 15,
-                "class": "small",
-                "fill": self.style.TEXT_COLOR,
-                "font-family": "monospace",
-                "content": html.escape(
-                    wire.name
-                    if len(wire.name) <= self.style.LABEL_WIDTH
-                    else wire.name[: max(self.style.LABEL_WIDTH - 3, 0)] + "..."
-                ),
-            }
-        )
-        for index in range(start, start + length):
-            svg += self._value_to_svg(
-                prev=wire[index - 1] if index > 0 else wire[index],
-                value=wire[index],
-                width=wire.width(),
-                left=left
-                + ((index - start) * (self.style.FULL_WIDTH / length))
-                + self.style.TEXT_WIDTH,
-                top=top,
-                length=length,
-                initial=(index == start),
-                vector_radix=vector_radix,
+        user_start, user_end = self.config.get_time_window()
+        visible_wires = self.config.get_visible_wires()
+
+        # Initialize svg
+        svg = ""
+
+        # Check if visible_wires is None or empty
+        if visible_wires is None or not visible_wires:
+            # Show all wires
+            svg = self._shape_to_svg(
+                {
+                    "name": "text",
+                    "x": left,
+                    "y": top + 15,
+                    "class": "small",
+                    "fill": self.style.TEXT_COLOR,
+                    "font-family": "monospace",
+                    "content": html.escape(
+                        wire.name if len(wire.name) <= self.style.LABEL_WIDTH else wire.name[: max(self.style.LABEL_WIDTH - 3, 0)] + "...",
+                    ),
+                }
             )
-        return svg
+            for index in range(start, start + length):
+                if (user_start is None or index >= user_start) and (user_end is None or index <= user_end):
+                    # Show waveform for all wires
+                    svg += self._value_to_svg(
+                        prev=wire[index - 1] if index > 0 else wire[index],
+                        value=wire[index],
+                        width=wire.width(),
+                        left=left + ((index - start) * (self.style.FULL_WIDTH / length)) + self.style.TEXT_WIDTH,
+                        top=top,
+                        length=length,
+                        initial=(index == start),
+                        vector_radix=vector_radix,
+                    )
+            return svg
+        elif wire.name in visible_wires:
+            # Show only specified wires and their waveforms
+            svg = self._shape_to_svg(
+                {
+                    "name": "text",
+                    "x": left,
+                    "y": top + 15,
+                    "class": "small",
+                    "fill": self.style.TEXT_COLOR,
+                    "font-family": "monospace",
+                    "content": html.escape(
+                        wire.name if len(wire.name) <= self.style.LABEL_WIDTH else wire.name[: max(self.style.LABEL_WIDTH - 3, 0)] + "...",
+                    ),
+                }
+            )
+            for index in range(start, start + length):
+                if (user_start is None or index >= user_start) and (user_end is None or index <= user_end):
+                    # Show waveform only for specified wires
+                    svg += self._value_to_svg(
+                        prev=wire[index - 1] if index > 0 else wire[index],
+                        value=wire[index],
+                        width=wire.width(),
+                        left=left + ((index - start) * (self.style.FULL_WIDTH / length)) + self.style.TEXT_WIDTH,
+                        top=top,
+                        length=length,
+                        initial=(index == start),
+                        vector_radix=vector_radix,
+                    )
+            return svg
+        else:
+            return ""  # Return an empty string for invisible wires
 
     class ValueType(Enum):
         LOW = 0
